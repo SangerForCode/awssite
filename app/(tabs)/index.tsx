@@ -291,12 +291,19 @@ export default function IndexScreen() {
 
       {/* About Card */}
       <Animated.View entering={FadeInUp.delay(800).springify()} style={styles.aboutCard}>
-        <ThemedText style={styles.aboutTitle}>About Me</ThemedText>
-        <ThemedText style={styles.aboutText}>
-          Third-year dual degree student at BITS Pilani with an 8.0 CGPA, combining chemistry research with 
-          cutting-edge technology. Building solutions that bridge the gap between science 
-          and software, with a focus on mental health, sustainability, and innovation.
-        </ThemedText>
+        <TouchableOpacity 
+          onPress={() => {
+            const { router } = require('expo-router');
+            router.push('/love');
+          }}
+        >
+          <ThemedText style={styles.aboutTitle}>About Me</ThemedText>
+          <ThemedText style={styles.aboutText}>
+            Third-year dual degree student at BITS Pilani with an 8.0 CGPA, combining chemistry research with 
+            cutting-edge technology. Building solutions that bridge the gap between science 
+            and software, with a focus on mental health, sustainability, and innovation.
+          </ThemedText>
+        </TouchableOpacity>
         
         <View style={styles.currentlyContainer}>
           <ThemedText style={styles.currentlyTitle}>Currently Working On:</ThemedText>
