@@ -1,110 +1,363 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import React, { useState } from 'react';
+import { StyleSheet, Dimensions, Pressable, ScrollView, View } from 'react-native';
+import Animated, {
+  FadeInDown,
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 
-export default function TabTwoScreen() {
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Minimal Color Palette
+const COLORS = {
+  dark: '#0A0A0A',
+  gray: '#1A1A1A', 
+  light: '#F5F5F5',
+  white: '#FFFFFF',
+  accent: '#6366F1',
+  text: '#888888',
+  textLight: '#CCCCCC',
+};
+
+// Timeline Card Component
+interface TimelineCardProps {
+  year: string;
+  title: string;
+  description: string;
+  delay?: number;
+  isLast?: boolean;
+}
+
+const TimelineCard: React.FC<TimelineCardProps> = ({ 
+  year, 
+  title, 
+  description, 
+  delay = 0,
+  isLast = false 
+}) => {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePress = () => {
+    scale.value = withSpring(0.95, {}, () => {
+      scale.value = withSpring(1);
+    });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
+    <Animated.View entering={FadeInUp.delay(delay).springify()}>
+      <View style={styles.timelineItem}>
+        {/* Timeline Line */}
+        {!isLast && <View style={styles.timelineLine} />}
+        
+        {/* Timeline Dot */}
+        <View style={styles.timelineDot} />
+        
+        {/* Content Card */}
+        <Animated.View style={[styles.timelineCard, animatedStyle]}>
+          <Pressable onPress={handlePress} style={styles.cardPressable}>
+            <View style={styles.cardHeader}>
+              <ThemedText style={styles.yearText}>{year}</ThemedText>
+              <View style={styles.yearBadge}>
+                <ThemedText style={styles.yearBadgeText}>•</ThemedText>
+              </View>
+            </View>
+            <ThemedText style={styles.titleText}>{title}</ThemedText>
+            <ThemedText style={styles.descriptionText}>{description}</ThemedText>
+          </Pressable>
+        </Animated.View>
+      </View>
+    </Animated.View>
+  );
+};
+
+// Stats Component
+const Stats = () => {
+  const stats = [
+    { label: 'Years', value: '5' },
+    { label: 'Degrees', value: '2' },
+    { label: 'Campus', value: 'GOA' },
+  ];
+
+  return (
+    <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.statsContainer}>
+      {stats.map((stat, index) => (
+        <View key={index} style={styles.statItem}>
+          <ThemedText style={styles.statValue}>{stat.value}</ThemedText>
+          <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>
+        </View>
+      ))}
+    </Animated.View>
+  );
+};
+
+// Main Component
+export default function ExploreScreen() {
+  const timelineData = [
+    {
+      year: '2021',
+      title: 'Started Journey',
+      description: 'Joined BITS Pilani Goa with Chemistry. New beginnings in paradise.',
+    },
+    {
+      year: '2022', 
+      title: 'Dual Degree',
+      description: 'Added Math & Computing. Discovered the beauty of code and algorithms.',
+    },
+    {
+      year: '2023',
+      title: 'Research Phase',
+      description: 'Applied ML to chemistry research. Published papers on electrocatalysis.',
+    },
+    {
+      year: '2024',
+      title: 'Building Things',
+      description: 'Co-founded ventures, built apps, started creating content.',
+    },
+    {
+      year: '2025',
+      title: 'Current Focus',
+      description: 'Mental health apps, trading, fitness. The journey continues.',
+    },
+  ];
+
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <Animated.View entering={FadeInUp.springify()} style={styles.header}>
+        <ThemedText style={styles.headerTitle}>Journey</ThemedText>
+        <ThemedText style={styles.headerSubtitle}>BITS Pilani • Goa Campus</ThemedText>
+      </Animated.View>
+
+      {/* Stats */}
+      <Stats />
+
+      {/* About Card */}
+      <Animated.View entering={FadeInUp.delay(400).springify()} style={styles.aboutCard}>
+        <View style={styles.aboutContent}>
+          <ThemedText style={styles.aboutTitle}>Dual Degree Student</ThemedText>
+          <ThemedText style={styles.aboutText}>
+            Chemistry + Mathematics & Computing{'\n'}
+            Combining molecular science with computational thinking
           </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+          <View style={styles.tagContainer}>
+            <View style={styles.tag}>
+              <ThemedText style={styles.tagText}>Research</ThemedText>
+            </View>
+            <View style={styles.tag}>
+              <ThemedText style={styles.tagText}>Development</ThemedText>
+            </View>
+            <View style={styles.tag}>
+              <ThemedText style={styles.tagText}>Innovation</ThemedText>
+            </View>
+          </View>
+        </View>
+      </Animated.View>
+
+      {/* Timeline */}
+      <View style={styles.timelineContainer}>
+        {timelineData.map((item, index) => (
+          <TimelineCard
+            key={index}
+            {...item}
+            delay={600 + index * 100}
+            isLast={index === timelineData.length - 1}
+          />
+        ))}
+      </View>
+
+      {/* Footer */}
+      <Animated.View entering={FadeInUp.delay(1200).springify()} style={styles.footer}>
+        <View style={styles.footerContent}>
+          <ThemedText style={styles.footerEmoji}>🚀</ThemedText>
+          <ThemedText style={styles.footerText}>
+            Building the future, one line of code at a time
+          </ThemedText>
+        </View>
+      </Animated.View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.dark,
   },
-  titleContainer: {
+
+  // Header
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 32,
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: COLORS.white,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: COLORS.text,
+  },
+
+  // Stats
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 24,
+    marginBottom: 32,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: COLORS.white,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.text,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+
+  // About Card
+  aboutCard: {
+    marginHorizontal: 24,
+    marginBottom: 40,
+    backgroundColor: COLORS.gray,
+    borderRadius: 16,
+    padding: 24,
+  },
+  aboutContent: {},
+  aboutTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: COLORS.white,
+    marginBottom: 8,
+  },
+  aboutText: {
+    fontSize: 16,
+    color: COLORS.textLight,
+    lineHeight: 24,
+    marginBottom: 20,
+  },
+  tagContainer: {
     flexDirection: 'row',
     gap: 8,
+  },
+  tag: {
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  tagText: {
+    fontSize: 12,
+    color: COLORS.white,
+    fontWeight: '500',
+  },
+
+  // Timeline
+  timelineContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
+  timelineItem: {
+    position: 'relative',
+    paddingLeft: 40,
+    marginBottom: 24,
+  },
+  timelineLine: {
+    position: 'absolute',
+    left: 15,
+    top: 32,
+    bottom: -24,
+    width: 2,
+    backgroundColor: COLORS.gray,
+  },
+  timelineDot: {
+    position: 'absolute',
+    left: 11,
+    top: 16,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: COLORS.accent,
+  },
+  timelineCard: {
+    backgroundColor: COLORS.gray,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  cardPressable: {
+    padding: 20,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  yearText: {
+    fontSize: 14,
+    color: COLORS.accent,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  yearBadge: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.text,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  yearBadgeText: {
+    fontSize: 8,
+    color: COLORS.text,
+  },
+  titleText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.white,
+    marginBottom: 6,
+  },
+  descriptionText: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    lineHeight: 20,
+  },
+
+  // Footer
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
+  footerContent: {
+    alignItems: 'center',
+    backgroundColor: COLORS.gray,
+    borderRadius: 16,
+    padding: 24,
+  },
+  footerEmoji: {
+    fontSize: 32,
+    marginBottom: 12,
+  },
+  footerText: {
+    fontSize: 16,
+    color: COLORS.textLight,
+    textAlign: 'center',
   },
 });

@@ -1,0 +1,302 @@
+import { Image } from 'expo-image';
+import { Platform, StyleSheet, useWindowDimensions, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+
+import { HelloWave } from '@/components/HelloWave';
+import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { ExternalLink } from '@/components/ExternalLink';
+import { ResponsiveContainer } from '@/components/ResponsiveContainer';
+import { Colors } from '@/constants/Colors';
+
+export default function HomeScreen() {
+  return (
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: Colors.light.backgroundAlt, dark: Colors.dark.backgroundAlt }}
+      headerImage={
+        <LinearGradient
+          colors={[Colors.light.tint, Colors.light.accent]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerGradient}>
+          <ThemedText style={styles.gradientEmoji}>👋</ThemedText>
+        </LinearGradient>
+      }>
+      <ResponsiveContainer maxWidth={1200}>
+        <ThemedView style={styles.heroSection}>
+          <ThemedView style={styles.titleContainer}>
+            <ThemedText type="title" style={styles.name}>Ayush Sanger</ThemedText>
+            <HelloWave />
+          </ThemedView>
+          <ThemedText style={styles.tagline}>Creating Impact Through Technology & Innovation</ThemedText>
+        </ThemedView>
+
+        <ThemedView style={styles.cardsGrid}>
+          <ThemedView style={[styles.card, styles.aboutCard]}>
+            <ThemedView style={styles.cardIcon}>
+              <ThemedText style={styles.emoji}>💻</ThemedText>
+            </ThemedView>
+            <ThemedText type="subtitle" style={styles.cardTitle}>Tech Enthusiast & Builder</ThemedText>
+            <ThemedText style={styles.description}>
+              Dual-degree student at BITS Pilani, pursuing Chemistry and Mathematics & Computing. 
+              I'm passionate about building meaningful things — whether it's software products, 
+              machine learning models, or creating solutions that make a real difference.
+            </ThemedText>
+            <ThemedView style={styles.skillsList}>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>Full-Stack Development</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>Machine Learning</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>React Native</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>Cross-Platform Apps</ThemedText>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+
+          <ThemedView style={[styles.card, styles.missionCard]}>
+            <ThemedView style={styles.cardIcon}>
+              <ThemedText style={styles.emoji}>🎯</ThemedText>
+            </ThemedView>
+            <ThemedText type="subtitle" style={styles.cardTitle}>Mission & Vision</ThemedText>
+            <ThemedText style={styles.description}>
+              Help people (especially youth) improve their mental health, stay motivated, and become better 
+              every day through real, honest content. I believe in combining technology with physical and 
+              mental well-being to create lasting positive impact.
+            </ThemedText>
+          </ThemedView>
+
+          <ThemedView style={[styles.card, styles.educationCard]}>
+            <ThemedView style={styles.cardIcon}>
+              <ThemedText style={styles.emoji}>🧪</ThemedText>
+            </ThemedView>
+            <ThemedText type="subtitle" style={styles.cardTitle}>Academic Journey</ThemedText>
+            <ThemedText style={styles.description}>
+              Started with research in electrocatalysis and surface chemistry, applying machine learning 
+              to accelerate catalyst discovery. Now exploring the intersection of chemistry, mathematics, 
+              computing, and entrepreneurship at one of India's premier institutions.
+            </ThemedText>
+            <ThemedView style={styles.skillsList}>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>BITS Pilani</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>Chemistry</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>Mathematics & Computing</ThemedText>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+
+          <ThemedView style={[styles.card, styles.projectsCard]}>
+            <ThemedView style={styles.cardIcon}>
+              <ThemedText style={styles.emoji}>🚀</ThemedText>
+            </ThemedView>
+            <ThemedText type="subtitle" style={styles.cardTitle}>Projects & Ventures</ThemedText>
+            <ThemedText style={styles.description}>
+              Co-founded innovative apps like BITS Pawn Shop and contributed to platforms like FITSOC. 
+              Beyond tech, I'm actively involved in trading, daily workouts, and creating content to share 
+              knowledge and inspire personal growth.
+            </ThemedText>
+            <ThemedView style={styles.skillsList}>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>Startup Ideation</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>Content Creation</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>Trading</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.skillTag}>
+                <ThemedText style={styles.skillTagText}>Fitness</ThemedText>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+        </ThemedView>
+
+        <ThemedView style={styles.socialSection}>
+          <ThemedText type="subtitle" style={styles.socialTitle}>Let's Connect & Collaborate</ThemedText>
+          <ThemedView style={styles.socialButtons}>
+            <ExternalLink href="https://www.linkedin.com/in/ayushsanger/">
+              <ThemedView style={styles.socialButton}>
+                <ThemedText style={styles.socialButtonText}>LinkedIn</ThemedText>
+              </ThemedView>
+            </ExternalLink>
+            <ExternalLink href="https://www.instagram.com/sanger_ayush">
+              <ThemedView style={styles.socialButton}>
+                <ThemedText style={styles.socialButtonText}>Instagram</ThemedText>
+              </ThemedView>
+            </ExternalLink>
+            <ExternalLink href="#">
+              <ThemedView style={styles.socialButton}>
+                <ThemedText style={styles.socialButtonText}>Portfolio</ThemedText>
+              </ThemedView>
+            </ExternalLink>
+            <ExternalLink href="#">
+              <ThemedView style={styles.socialButton}>
+                <ThemedText style={styles.socialButtonText}>Get In Touch</ThemedText>
+              </ThemedView>
+            </ExternalLink>
+          </ThemedView>
+        </ThemedView>
+      </ResponsiveContainer>
+    </ParallaxScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  headerGradient: {
+    height: 320,
+    width: 320,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.15,
+    transform: [{ rotate: '-15deg' }],
+    bottom: -60,
+    right: -60,
+    position: 'absolute',
+    borderRadius: 160,
+  },
+  gradientEmoji: {
+    fontSize: 200,
+  },
+  heroSection: {
+    paddingTop: 60,
+    paddingBottom: 40,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  name: {
+    fontSize: 44,
+    fontWeight: '700',
+  },
+  tagline: {
+    fontSize: 22,
+    color: Colors.light.textSecondary,
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  cardsGrid: {
+    paddingHorizontal: 24,
+    gap: 28,
+  },
+  card: {
+    backgroundColor: Colors.light.card,
+    borderRadius: 24,
+    padding: 28,
+    marginBottom: 28,
+    shadowColor: Colors.light.text,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  aboutCard: {
+    borderLeftWidth: 6,
+    borderLeftColor: Colors.light.tint,
+  },
+  missionCard: {
+    borderLeftWidth: 6,
+    borderLeftColor: Colors.light.accent,
+  },
+  educationCard: {
+    borderLeftWidth: 6,
+    borderLeftColor: Colors.light.tint,
+  },
+  projectsCard: {
+    borderLeftWidth: 6,
+    borderLeftColor: Colors.light.accent,
+  },
+  cardIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.light.backgroundAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    shadowColor: Colors.light.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  emoji: {
+    fontSize: 28,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  description: {
+    fontSize: 17,
+    lineHeight: 26,
+    color: Colors.light.textSecondary,
+  },
+  skillsList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 20,
+  },
+  skillTag: {
+    backgroundColor: Colors.light.tint,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  skillTagText: {
+    color: Colors.light.card,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  socialSection: {
+    marginTop: 24,
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
+  socialTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  socialButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 20,
+    justifyContent: 'center',
+  },
+  socialButton: {
+    backgroundColor: Colors.light.tint,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 16,
+    minWidth: 140,
+    alignItems: 'center',
+    shadowColor: Colors.light.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  socialButtonText: {
+    color: Colors.light.card,
+    fontSize: 17,
+    fontWeight: '600',
+  },
+});
