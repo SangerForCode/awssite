@@ -20,23 +20,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { globalStyles, COLORS } from '@/styles/globalStyles';
 
 const { width } = Dimensions.get('window');
-
-// Minimal Color Palette
-const COLORS = {
-  dark: '#0A0A0A',
-  gray: '#1A1A1A', 
-  light: '#F5F5F5',
-  white: '#FFFFFF',
-  accent: '#6366F1',
-  text: '#888888',
-  textLight: '#CCCCCC',
-  green: '#10B981',
-  orange: '#F59E0B',
-  purple: '#8B5CF6',
-  blue: '#3B82F6',
-};
 
 // Animated Card Component
 interface AnimatedCardProps {

@@ -9,17 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-
-// Minimal Color Palette
-const COLORS = {
-  dark: '#0A0A0A',
-  gray: '#1A1A1A', 
-  light: '#F5F5F5',
-  white: '#FFFFFF',
-  accent: '#6366F1',
-  text: '#888888',
-  textLight: '#CCCCCC',
-};
+import { globalStyles, COLORS } from '@/styles/globalStyles';
 
 // Contact Card Component
 interface ContactCardProps {
@@ -221,160 +211,37 @@ export default function ContactScreen() {
   );
 }
 
+// Page-specific styles extending global styles
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.dark,
-  },
-
-  // Header
-  header: {
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 32,
-  },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: COLORS.white,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: COLORS.text,
-  },
-
-  // Intro Card
+  ...globalStyles,
+  
+  // Specific styles for the contact page
   introCard: {
-    marginHorizontal: 24,
-    marginBottom: 32,
-    backgroundColor: COLORS.gray,
-    borderRadius: 16,
-    padding: 24,
+    ...globalStyles.card,
   },
   introTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.white,
-    marginBottom: 8,
+    ...globalStyles.cardTitle,
   },
   introText: {
-    fontSize: 16,
-    color: COLORS.textLight,
-    lineHeight: 24,
+    ...globalStyles.cardText,
   },
 
-  // Contact Methods
   contactSection: {
-    paddingHorizontal: 24,
+    ...globalStyles.section,
     gap: 16,
-    marginBottom: 32,
   },
   contactCard: {
-    backgroundColor: COLORS.gray,
-    borderRadius: 12,
-    overflow: 'hidden',
+    ...globalStyles.interactiveCard,
   },
-  cardContent: {
-    padding: 20,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  cardIcon: {
-    fontSize: 24,
-    marginRight: 16,
-    marginTop: 2,
-  },
-  cardTextContainer: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.white,
-    marginBottom: 4,
-  },
+
+  // Specific card description style
   cardDescription: {
     fontSize: 14,
     color: COLORS.textLight,
     lineHeight: 20,
   },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.accent,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  actionText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  arrow: {
-    fontSize: 16,
-    color: COLORS.white,
-    fontWeight: 'bold',
-  },
 
-  // Quick Links Section
   quickLinksSection: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.white,
-    marginBottom: 16,
-  },
-  socialLinksContainer: {
-    gap: 12,
-  },
-  socialLink: {
-    backgroundColor: COLORS.gray,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  socialContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  socialPlatform: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  socialHandle: {
-    fontSize: 14,
-    color: COLORS.text,
-  },
-
-  // Footer
-  footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  footerContent: {
-    alignItems: 'center',
-    backgroundColor: COLORS.gray,
-    borderRadius: 16,
-    padding: 24,
-  },
-  footerEmoji: {
-    fontSize: 32,
-    marginBottom: 12,
-  },
-  footerText: {
-    fontSize: 16,
-    color: COLORS.textLight,
-    textAlign: 'center',
-  },
+    ...globalStyles.section,
+  }
 });

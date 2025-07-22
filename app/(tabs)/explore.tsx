@@ -10,19 +10,9 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { globalStyles, COLORS } from '@/styles/globalStyles';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// Minimal Color Palette
-const COLORS = {
-  dark: '#0A0A0A',
-  gray: '#1A1A1A', 
-  light: '#F5F5F5',
-  white: '#FFFFFF',
-  accent: '#6366F1',
-  text: '#888888',
-  textLight: '#CCCCCC',
-};
 
 // Timeline Card Component
 interface TimelineCardProps {
@@ -188,89 +178,9 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.dark,
-  },
+  ...globalStyles,
 
-  // Header
-  header: {
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 32,
-  },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: COLORS.white,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: COLORS.text,
-  },
-
-  // Stats
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 24,
-    marginBottom: 32,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: COLORS.white,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: COLORS.text,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-
-  // About Card
-  aboutCard: {
-    marginHorizontal: 24,
-    marginBottom: 40,
-    backgroundColor: COLORS.gray,
-    borderRadius: 16,
-    padding: 24,
-  },
-  aboutContent: {},
-  aboutTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.white,
-    marginBottom: 8,
-  },
-  aboutText: {
-    fontSize: 16,
-    color: COLORS.textLight,
-    lineHeight: 24,
-    marginBottom: 20,
-  },
-  tagContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: COLORS.accent,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  tagText: {
-    fontSize: 12,
-    color: COLORS.white,
-    fontWeight: '500',
-  },
-
-  // Timeline
+  // Page-specific styles
   timelineContainer: {
     paddingHorizontal: 24,
     paddingBottom: 40,
@@ -279,6 +189,30 @@ const styles = StyleSheet.create({
     position: 'relative',
     paddingLeft: 40,
     marginBottom: 24,
+  },
+  timelineCard: {
+    backgroundColor: COLORS.gray,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  aboutCard: {
+    ...globalStyles.card,
+    marginBottom: 40,
+  },
+  aboutContent: {
+    flex: 1,
+  },
+  aboutTitle: {
+    ...globalStyles.cardTitle,
+  },
+  aboutText: {
+    ...globalStyles.cardText,
+    marginBottom: 20,
+  },
+  descriptionText: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    lineHeight: 20,
   },
   timelineLine: {
     position: 'absolute',
@@ -296,19 +230,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: COLORS.accent,
-  },
-  timelineCard: {
-    backgroundColor: COLORS.gray,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  cardPressable: {
-    padding: 20,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
   },
   yearText: {
     fontSize: 14,
@@ -334,30 +255,7 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     marginBottom: 6,
   },
-  descriptionText: {
-    fontSize: 14,
-    color: COLORS.textLight,
-    lineHeight: 20,
-  },
-
-  // Footer
-  footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  footerContent: {
-    alignItems: 'center',
-    backgroundColor: COLORS.gray,
-    borderRadius: 16,
-    padding: 24,
-  },
-  footerEmoji: {
-    fontSize: 32,
-    marginBottom: 12,
-  },
-  footerText: {
-    fontSize: 16,
-    color: COLORS.textLight,
-    textAlign: 'center',
+  cardPressable: {
+    padding: 20,
   },
 });
