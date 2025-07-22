@@ -21,8 +21,11 @@ import Animated, {
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { globalStyles, COLORS } from '@/styles/globalStyles';
+import { useRouter } from 'expo-router'; // Added router import
+
 
 const { width } = Dimensions.get('window');
+
 
 // Animated Card Component
 interface AnimatedCardProps {
@@ -33,6 +36,7 @@ interface AnimatedCardProps {
   color: string;
   delay?: number;
 }
+
 
 const AnimatedCard: React.FC<AnimatedCardProps> = ({
   title,
@@ -45,12 +49,14 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
   const scale = useSharedValue(1);
   const rotation = useSharedValue(0);
 
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       { scale: scale.value },
       { rotateY: `${rotation.value}deg` },
     ],
   }));
+
 
   const handlePress = () => {
     scale.value = withSpring(0.95, {}, () => {
@@ -60,6 +66,7 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
       rotation.value = withTiming(0, { duration: 100 });
     });
   };
+
 
   return (
     <Animated.View 
@@ -90,14 +97,17 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
   );
 };
 
+
 // Floating Element Component
 interface FloatingElementProps {
   emoji: string;
   style: any;
 }
 
+
 const FloatingElement: React.FC<FloatingElementProps> = ({ emoji, style }) => {
   const translateY = useSharedValue(0);
+
 
   useEffect(() => {
     translateY.value = withRepeat(
@@ -107,9 +117,11 @@ const FloatingElement: React.FC<FloatingElementProps> = ({ emoji, style }) => {
     );
   }, []);
 
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
+
 
   return (
     <Animated.View style={[style, animatedStyle]}>
@@ -117,6 +129,7 @@ const FloatingElement: React.FC<FloatingElementProps> = ({ emoji, style }) => {
     </Animated.View>
   );
 };
+
 
 // Stats Component
 const Stats = () => {
@@ -126,6 +139,7 @@ const Stats = () => {
     { label: 'Users', value: '3.5K+' },
     { label: 'Year', value: '2025' },
   ];
+
 
   return (
     <Animated.View entering={FadeInDown.delay(600).springify()} style={styles.statsContainer}>
@@ -139,6 +153,7 @@ const Stats = () => {
   );
 };
 
+
 // Social Button Component
 interface SocialButtonProps {
   label: string;
@@ -146,12 +161,15 @@ interface SocialButtonProps {
   delay?: number;
 }
 
+
 const SocialButton: React.FC<SocialButtonProps> = ({ label, url, delay = 0 }) => {
   const scale = useSharedValue(1);
+
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
+
 
   const handlePress = () => {
     scale.value = withSpring(0.9, {}, () => {
@@ -167,6 +185,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ label, url, delay = 0 }) =>
     }
   };
 
+
   return (
     <Animated.View entering={FadeInUp.delay(delay).springify()} style={animatedStyle}>
       <TouchableOpacity onPress={handlePress} style={styles.socialButton}>
@@ -176,9 +195,12 @@ const SocialButton: React.FC<SocialButtonProps> = ({ label, url, delay = 0 }) =>
   );
 };
 
+
 // Main Component
 export default function IndexScreen() {
   const waveAnimation = useSharedValue(0);
+  const router = useRouter(); // Added router hook
+
 
   useEffect(() => {
     waveAnimation.value = withRepeat(
@@ -188,6 +210,7 @@ export default function IndexScreen() {
     );
   }, []);
 
+
   const waveStyle = useAnimatedStyle(() => ({
     transform: [
       {
@@ -195,6 +218,13 @@ export default function IndexScreen() {
       },
     ],
   }));
+
+
+  // Function to handle moderator page navigation
+  const handleModeratorNavigation = () => {
+    router.push('/moderator');
+  };
+
 
   const cardData = [
     {
@@ -243,6 +273,7 @@ export default function IndexScreen() {
     },
   ];
 
+
   const socialLinks = [
     { label: 'LinkedIn', url: 'https://www.linkedin.com/in/ayushsanger/' },
     { label: 'Instagram', url: 'https://www.instagram.com/sanger_ayush' },
@@ -250,12 +281,14 @@ export default function IndexScreen() {
     { label: 'Schedule', url: 'https://calendly.com/f20230742-goa' },
   ];
 
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Floating Elements */}
       <FloatingElement emoji="💻" style={styles.float1} />
       <FloatingElement emoji="🧪" style={styles.float2} />
       <FloatingElement emoji="🚀" style={styles.float3} />
+
 
       {/* Header */}
       <Animated.View entering={FadeInUp.springify()} style={styles.header}>
@@ -272,8 +305,10 @@ export default function IndexScreen() {
         <ThemedText style={styles.location}>📍 BITS Pilani, Goa Campus</ThemedText>
       </Animated.View>
 
+
       {/* Stats */}
       <Stats />
+
 
       {/* About Card */}
       <Animated.View entering={FadeInUp.delay(800).springify()} style={styles.aboutCard}>
@@ -310,6 +345,7 @@ export default function IndexScreen() {
         </View>
       </Animated.View>
 
+
       {/* Cards Grid */}
       <View style={styles.cardsGrid}>
         {cardData.map((card, index) => (
@@ -320,6 +356,7 @@ export default function IndexScreen() {
           />
         ))}
       </View>
+
 
       {/* Social Section */}
       <Animated.View entering={FadeInUp.delay(1800).springify()} style={styles.socialSection}>
@@ -340,18 +377,23 @@ export default function IndexScreen() {
         </View>
       </Animated.View>
 
-      {/* Footer */}
+
+      {/* Footer - Made Clickable */}
       <Animated.View entering={FadeInUp.delay(2500).springify()} style={styles.footer}>
-        <ThemedText style={styles.footerText}>
-          "Building the future, one line of code at a time" ✨
-        </ThemedText>
+        <TouchableOpacity onPress={handleModeratorNavigation}>
+          <ThemedText style={[styles.footerText, styles.clickableFooter]}>
+            "Building the future, one line of code at a time" ✨
+          </ThemedText>
+        </TouchableOpacity>
       </Animated.View>
+
 
       {/* Bottom Spacer */}
       <View style={{ height: 100 }} />
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   ...globalStyles,
@@ -360,5 +402,10 @@ const styles = StyleSheet.create({
     ...globalStyles.header,
     alignItems: 'center' as const,
     paddingBottom: 40,
-  }
+  },
+  // Added style for clickable footer
+  clickableFooter: {
+    textDecorationLine: 'underline' as const,
+    opacity: 0.8,
+  },
 });
