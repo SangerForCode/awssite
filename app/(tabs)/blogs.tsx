@@ -1,400 +1,219 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  RefreshControl,
+} from 'react-native';
+import axios from 'axios';
 import Animated, {
-  FadeInDown,
   FadeInUp,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  withRepeat,
+  withTiming,
+  Easing,
 } from 'react-native-reanimated';
+import { useFocusEffect } from '@react-navigation/native';
 import { ThemedText } from '@/components/ThemedText';
 import { globalStyles, COLORS } from '@/styles/globalStyles';
+import { useRouter } from 'expo-router';
 
-// Blog Post Interface
-interface BlogPost {
+type Blog = {
   id: string;
   title: string;
   excerpt: string;
   content: string;
-  category: string;
-  readTime: string;
+  authorName: string;
   publishDate: string;
-  tags: string[];
-  featured?: boolean;
-}
-
-// Blog Category Component
-interface CategoryChipProps {
-  category: string;
-  isActive: boolean;
-  onPress: () => void;
-  delay?: number;
-}
-
-const CategoryChip: React.FC<CategoryChipProps> = ({ category, isActive, onPress, delay = 0 }) => {
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePress = () => {
-    scale.value = withSpring(0.95, {}, () => {
-      scale.value = withSpring(1);
-    });
-    onPress();
-  };
-
-  return (
-    <Animated.View entering={FadeInUp.delay(delay).springify()} style={animatedStyle}>
-      <TouchableOpacity
-        onPress={handlePress}
-        style={[
-          globalStyles.tag,
-          { backgroundColor: isActive ? COLORS.accent : COLORS.gray, marginRight: 8 }
-        ]}
-      >
-        <ThemedText style={[
-          globalStyles.tagText,
-          !isActive && { color: COLORS.textLight }
-        ]}>
-          {category}
-        </ThemedText>
-      </TouchableOpacity>
-    </Animated.View>
-  );
+  createdAt?: string;
+  readTime?: string;
 };
 
-// Featured Blog Card Component
-interface FeaturedBlogCardProps {
-  post: BlogPost;
-  onPress: () => void;
-  delay?: number;
-}
+const FIREBASE_URL =
+  'https://aws-site-personal-default-rtdb.firebaseio.com/blogs.json';
 
-const FeaturedBlogCard: React.FC<FeaturedBlogCardProps> = ({ post, onPress, delay = 0 }) => {
-  const scale = useSharedValue(1);
+export default function Blogs() {
+  const [blogs, setBlogs]   = useState<Blog[]>([]);
+  const [loading, setLoad]  = useState(true);
+  const [pulling, setPull]  = useState(false);
+  const router = useRouter();
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePress = () => {
-    scale.value = withSpring(0.98, {}, () => {
-      scale.value = withSpring(1);
-    });
-    onPress();
-  };
-
-  const getCategoryColor = (category: string): string => {
-    const colors: { [key: string]: string } = {
-      'Tech': COLORS.blue,
-      'Research': COLORS.purple,
-      'Personal Growth': COLORS.green,
-      'Entrepreneurship': COLORS.orange,
-      'Mental Health': COLORS.accent,
-    };
-    return colors[category] || COLORS.accent;
-  };
-
-  return (
-    <Animated.View entering={FadeInUp.delay(delay).springify()} style={animatedStyle}>
-      <TouchableOpacity onPress={handlePress} style={[globalStyles.card, { borderWidth: 2, borderColor: COLORS.accent, position: 'relative' }]}>
-        <View style={[globalStyles.badge, { backgroundColor: COLORS.accent, position: 'absolute', top: -12, right: 0, zIndex: 1 }]}>
-          <ThemedText style={[globalStyles.badgeText, { color: COLORS.white }]}>Featured</ThemedText>
-        </View>
+  /* -------- FETCH - ONLY FIREBASE DATA -------- */
+  const fetchBlogs = async () => {
+    try {
+      const res = await axios.get(FIREBASE_URL);
+      
+      // FIXED: Only show blogs that actually exist in Firebase
+      if (res.data && Object.keys(res.data).length > 0) {
+        const list: Blog[] = Object.keys(res.data).map(id => ({
+          id,
+          ...res.data[id],
+        }));
         
-        <View style={globalStyles.cardHeader}>
-          <View style={[globalStyles.badge, { backgroundColor: getCategoryColor(post.category) }]}>
-            <ThemedText style={[globalStyles.badgeText, { color: COLORS.white }]}>{post.category}</ThemedText>
-          </View>
-          <ThemedText style={[globalStyles.badgeText, { color: COLORS.text }]}>{post.readTime} read</ThemedText>
-        </View>
+        /* newest first by createdAt then publishDate */
+        list.sort(
+          (a, b) =>
+            new Date(b.createdAt || b.publishDate).getTime() -
+            new Date(a.createdAt || a.publishDate).getTime()
+        );
+        setBlogs(list);
+      } else {
+        // If Firebase is empty or null, show empty array
+        setBlogs([]);
+      }
+    } catch (error) {
+      console.log('Error fetching blogs:', error);
+      Alert.alert('Error', 'Could not load blogs');
+      setBlogs([]); // Set empty on error
+    } finally {
+      setLoad(false);
+      setPull(false);
+    }
+  };
 
-        <ThemedText style={[globalStyles.cardTitle, { fontSize: 22, lineHeight: 28 }]}>{post.title}</ThemedText>
-        <ThemedText style={[globalStyles.cardText, { marginBottom: 20 }]}>{post.excerpt}</ThemedText>
-        
-        <View style={globalStyles.tagContainer}>
-          {post.tags.slice(0, 4).map((tag, index) => (
-            <View key={index} style={[globalStyles.badge, { backgroundColor: `${COLORS.text}30` }]}>
-              <ThemedText style={[globalStyles.badgeText, { color: COLORS.textLight }]}>#{tag}</ThemedText>
-            </View>
-          ))}
-        </View>
+  useEffect(() => { fetchBlogs(); }, []);
 
-        <View style={[globalStyles.cardHeader, { marginTop: 16, marginBottom: 0 }]}>
-          <ThemedText style={[globalStyles.badgeText, { color: COLORS.text }]}>{post.publishDate}</ThemedText>
-          <View style={globalStyles.actionButton}>
-            <ThemedText style={globalStyles.actionText}>Read More</ThemedText>
-            <ThemedText style={globalStyles.arrow}>→</ThemedText>
-          </View>
-        </View>
-      </TouchableOpacity>
-    </Animated.View>
+  /* auto-refresh when coming back from AddBlog */
+  useFocusEffect(
+    useCallback(() => { fetchBlogs(); }, [])
   );
-};
 
-// Regular Blog Card Component
-interface BlogCardProps {
-  post: BlogPost;
-  onPress: () => void;
-  delay?: number;
-}
-
-const BlogCard: React.FC<BlogCardProps> = ({ post, onPress, delay = 0 }) => {
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePress = () => {
-    scale.value = withSpring(0.98, {}, () => {
-      scale.value = withSpring(1);
-    });
-    onPress();
+  const onRefresh = () => {
+    setPull(true);
+    fetchBlogs();
   };
 
-  const getCategoryColor = (category: string): string => {
-    const colors: { [key: string]: string } = {
-      'Tech': COLORS.blue,
-      'Research': COLORS.purple,
-      'Personal Growth': COLORS.green,
-      'Entrepreneurship': COLORS.orange,
-      'Mental Health': COLORS.accent,
-    };
-    return colors[category] || COLORS.accent;
-  };
+  /* navigate to writer screen */
+  const toWriter = () => router.push('/addblogs');
 
+  /* -------- UI -------- */
   return (
-    <Animated.View entering={FadeInUp.delay(delay).springify()} style={animatedStyle}>
-      <TouchableOpacity onPress={handlePress} style={globalStyles.animatedCard}>
-        <View style={globalStyles.cardContent}>
-          <View style={globalStyles.cardHeader}>
-            <View style={[globalStyles.badge, { backgroundColor: getCategoryColor(post.category) }]}>
-              <ThemedText style={[globalStyles.badgeText, { color: COLORS.white }]}>{post.category}</ThemedText>
-            </View>
-            <ThemedText style={[globalStyles.badgeText, { color: COLORS.text }]}>{post.readTime} read</ThemedText>
-          </View>
-
-          <ThemedText style={globalStyles.cardTitle}>{post.title}</ThemedText>
-          <ThemedText style={globalStyles.cardDescription}>{post.excerpt}</ThemedText>
-          
-          <View style={globalStyles.tagContainer}>
-            {post.tags.slice(0, 3).map((tag, index) => (
-              <View key={index} style={[globalStyles.badge, { backgroundColor: `${COLORS.text}20` }]}>
-                <ThemedText style={[globalStyles.badgeText, { color: COLORS.textLight }]}>#{tag}</ThemedText>
-              </View>
-            ))}
-          </View>
-
-          <View style={[globalStyles.cardHeader, { marginTop: 16, marginBottom: 0 }]}>
-            <ThemedText style={[globalStyles.badgeText, { color: COLORS.text }]}>{post.publishDate}</ThemedText>
-            <ThemedText style={[globalStyles.buttonText, { color: COLORS.accent }]}>Read →</ThemedText>
-          </View>
-        </View>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-};
-
-// Main Blog Component
-export default function BlogScreen() {
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Sample blog posts data
-  const blogPosts: BlogPost[] = [
-    {
-      id: '1',
-      title: 'Building BITS Pawn Shop: From Idea to 3.5K Users',
-      excerpt: 'The journey of creating a campus resale platform and scaling it across multiple BITS campuses.',
-      content: 'Full blog content here...',
-      category: 'Entrepreneurship',
-      readTime: '8 min',
-      publishDate: 'Jan 15, 2025',
-      tags: ['startup', 'react', 'django', 'scaling'],
-      featured: true,
-    },
-    {
-      id: '2',
-      title: 'Applying ML to Chemistry: Electrocatalyst Discovery',
-      excerpt: 'How machine learning is revolutionizing the way we discover and design new catalysts.',
-      content: 'Full blog content here...',
-      category: 'Research',
-      readTime: '12 min',
-      publishDate: 'Jan 10, 2025',
-      tags: ['machine-learning', 'chemistry', 'research', 'python'],
-    },
-    {
-      id: '3',
-      title: 'Mental Health in Tech: Breaking the Silence',
-      excerpt: 'Why we need to talk more openly about mental health challenges in the tech industry.',
-      content: 'Full blog content here...',
-      category: 'Mental Health',
-      readTime: '6 min',
-      publishDate: 'Jan 8, 2025',
-      tags: ['mental-health', 'tech-culture', 'wellness'],
-    },
-    {
-      id: '4',
-      title: 'React Native vs Flutter: A Developer\'s Perspective',
-      excerpt: 'Comparing two popular cross-platform frameworks from real-world development experience.',
-      content: 'Full blog content here...',
-      category: 'Tech',
-      readTime: '10 min',
-      publishDate: 'Jan 5, 2025',
-      tags: ['react-native', 'flutter', 'mobile-dev', 'comparison'],
-    },
-    {
-      id: '5',
-      title: 'The Art of Algorithmic Trading: Lessons Learned',
-      excerpt: 'Key insights and strategies from building automated trading systems.',
-      content: 'Full blog content here...',
-      category: 'Tech',
-      readTime: '15 min',
-      publishDate: 'Jan 2, 2025',
-      tags: ['trading', 'algorithms', 'python', 'finance'],
-    },
-    {
-      id: '6',
-      title: 'From Chemistry Lab to Code: My Dual Degree Journey',
-      excerpt: 'How studying both Chemistry and Computer Science shaped my unique perspective on problem-solving.',
-      content: 'Full blog content here...',
-      category: 'Personal Growth',
-      readTime: '7 min',
-      publishDate: 'Dec 28, 2024',
-      tags: ['education', 'bits-pilani', 'dual-degree', 'journey'],
-    },
-  ];
-
-  const categories = ['All', 'Tech', 'Research', 'Personal Growth', 'Entrepreneurship', 'Mental Health'];
-
-  const filteredPosts = blogPosts.filter(post => {
-    const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
-
-  const featuredPost = blogPosts.find(post => post.featured);
-  const regularPosts = filteredPosts.filter(post => !post.featured);
-
-  const handlePostPress = (post: BlogPost) => {
-    Alert.alert(post.title, 'Blog post would open here');
-  };
-
-  return (
-    <ScrollView style={globalStyles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <Animated.View entering={FadeInUp.springify()} style={globalStyles.header}>
-        <ThemedText style={globalStyles.headerTitle}>Blog</ThemedText>
-        <ThemedText style={globalStyles.headerSubtitle}>
-          Thoughts on tech, research, and personal growth
-        </ThemedText>
-      </Animated.View>
-
-      {/* Search Bar */}
-      <Animated.View entering={FadeInUp.delay(200).springify()} style={[globalStyles.card, { marginBottom: 24, position: 'relative' }]}>
-        <TextInput
-          style={[globalStyles.cardText, { paddingRight: 50, color: COLORS.white }]}
-          placeholder="Search posts..."
-          placeholderTextColor={COLORS.text}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        <View style={[globalStyles.iconContainer, { position: 'absolute', right: 24, top: 24 }]}>
-          <ThemedText style={{ fontSize: 16 }}>🔍</ThemedText>
-        </View>
-      </Animated.View>
-
-      {/* Categories */}
-      <View style={globalStyles.section}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={[globalStyles.tagContainer, { paddingHorizontal: 24 }]}>
-            {categories.map((category, index) => (
-              <CategoryChip
-                key={category}
-                category={category}
-                isActive={selectedCategory === category}
-                onPress={() => setSelectedCategory(category)}
-                delay={400 + index * 50}
-              />
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-
-      {/* Featured Post */}
-      {featuredPost && selectedCategory === 'All' && (
-        <View style={globalStyles.section}>
-          <FeaturedBlogCard
-            post={featuredPost}
-            onPress={() => handlePostPress(featuredPost)}
-            delay={600}
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        style={globalStyles.container}
+        contentContainerStyle={{ paddingBottom: 120 /* keeps above tab */ }}
+        refreshControl={
+          <RefreshControl
+            refreshing={pulling}
+            onRefresh={onRefresh}
+            tintColor={COLORS.accent}
           />
-        </View>
-      )}
-
-      {/* Blog Posts Grid */}
-      <View style={globalStyles.section}>
-        <Animated.View entering={FadeInUp.delay(800).springify()}>
-          <ThemedText style={globalStyles.sectionTitle}>
-            {selectedCategory === 'All' ? 'Latest Posts' : `${selectedCategory} Posts`}
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={globalStyles.header}>
+          <ThemedText style={globalStyles.headerTitle}>Blog</ThemedText>
+          <ThemedText style={globalStyles.headerSubtitle}>
+            Community-powered thoughts & stories
           </ThemedText>
-        </Animated.View>
-        
-        {regularPosts.length > 0 ? (
-          <View style={globalStyles.cardsGrid}>
-            {regularPosts.map((post, index) => (
-              <BlogCard
-                key={post.id}
-                post={post}
-                onPress={() => handlePostPress(post)}
-                delay={1000 + index * 100}
-              />
-            ))}
-          </View>
+        </View>
+
+        {loading ? (
+          <ThemedText style={[globalStyles.cardText, { textAlign: 'center' }]}>
+            Loading…
+          </ThemedText>
+        ) : blogs.length > 0 ? (
+          blogs.map((post, i) => (
+            <BlogCard key={post.id} post={post} delay={200 + i * 70} />
+          ))
         ) : (
-          <Animated.View entering={FadeInUp.delay(1000).springify()} style={globalStyles.footerContent}>
-            <ThemedText style={globalStyles.footerEmoji}>📝</ThemedText>
-            <ThemedText style={globalStyles.cardTitle}>No posts found</ThemedText>
-            <ThemedText style={globalStyles.footerText}>
-              Try adjusting your search or category filter
+          // Show empty state when no blogs
+          <View style={globalStyles.card}>
+            <ThemedText style={[globalStyles.cardTitle, { textAlign: 'center' }]}>
+              No blogs yet
             </ThemedText>
-          </Animated.View>
+            <ThemedText style={[globalStyles.cardText, { textAlign: 'center' }]}>
+              Be the first to write a blog!
+            </ThemedText>
+          </View>
         )}
-      </View>
+      </ScrollView>
 
-      {/* Newsletter Signup */}
-      <Animated.View entering={FadeInUp.delay(1200).springify()} style={globalStyles.ctaSection}>
-        <View style={globalStyles.ctaContent}>
-          <ThemedText style={globalStyles.ctaEmoji}>📬</ThemedText>
-          <ThemedText style={globalStyles.ctaTitle}>Stay Updated</ThemedText>
-          <ThemedText style={globalStyles.ctaText}>
-            Get notified when I publish new posts about tech, research, and personal growth
-          </ThemedText>
-          <TouchableOpacity 
-            style={globalStyles.ctaButton}
-            onPress={() => Alert.alert('Newsletter', 'Newsletter signup coming soon!')}
-          >
-            <ThemedText style={globalStyles.ctaButtonText}>Subscribe</ThemedText>
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
-
-      {/* Footer */}
-      <View style={globalStyles.footer}>
-        <View style={globalStyles.footerContent}>
-          <ThemedText style={globalStyles.footerEmoji}>✍️</ThemedText>
-          <ThemedText style={globalStyles.footerText}>
-            "Sharing knowledge is the best way to learn" ✨
-          </ThemedText>
-        </View>
-      </View>
-      {/* Extra space so content can scroll behind the tab bar */}
-      <View style={{ height: 100 }} />
-    </ScrollView>
+      {/* Floating "Write" FAB with gentle pulse */}
+      <FloatingFab onPress={toWriter} />
+    </View>
   );
 }
+
+/* ---------- Single card ---------- */
+function BlogCard({ post, delay }: { post: Blog; delay: number }) {
+  const [open, setOpen] = useState(false);
+  const scale = useSharedValue(1);
+  const style = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const press = () => {
+    scale.value = withSpring(0.95, {}, () => (scale.value = withSpring(1)));
+    setOpen(!open);
+  };
+
+  return (
+    <Animated.View entering={FadeInUp.delay(delay).springify()} style={style}>
+      <TouchableOpacity onPress={press} style={globalStyles.animatedCard}>
+        <View style={globalStyles.cardContent}>
+          <ThemedText style={globalStyles.cardTitle}>{post.title}</ThemedText>
+          <ThemedText
+            style={[
+              globalStyles.badgeText,
+              { color: COLORS.accent, marginBottom: 6 },
+            ]}
+          >
+            {post.authorName} • {post.publishDate}
+          </ThemedText>
+
+          <ThemedText style={globalStyles.cardDescription}>
+            {open ? post.content : post.excerpt}
+          </ThemedText>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
+/* ---------- Floating Action Button ---------- */
+function FloatingFab({ onPress }: { onPress: () => void }) {
+  /* pulse animation */
+  const pulse = useSharedValue(1);
+  pulse.value = withRepeat(
+    withTiming(1.08, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true
+  );
+  const style = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
+
+  return (
+    <Animated.View style={[styles.fab, style]}>
+      <TouchableOpacity style={{ flex: 1 }} onPress={onPress}>
+        <View style={styles.center}>
+          <ThemedText style={styles.fabIcon}>✍️</ThemedText>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
+const styles = StyleSheet.create({
+  fab: {
+    position: 'absolute',
+    bottom: 100, // distance from bottom tab
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.accent,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  fabIcon: { fontSize: 24, color: COLORS.white },
+});
