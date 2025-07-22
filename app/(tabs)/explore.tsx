@@ -173,6 +173,9 @@ export default function ExploreScreen() {
           </ThemedText>
         </View>
       </Animated.View>
+
+      {/* Bottom Spacer */}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }

@@ -300,6 +300,9 @@ export default function PortfolioScreen() {
           </TouchableOpacity>
         </View>
       </Animated.View>
+
+      {/* Bottom Spacer */}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }

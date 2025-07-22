@@ -207,6 +207,9 @@ export default function ContactScreen() {
           </ThemedText>
         </View>
       </Animated.View>
+
+      {/* Bottom Spacer */}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }

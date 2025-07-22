@@ -285,7 +285,7 @@ export default function IndexScreen() {
         >
           <ThemedText style={styles.aboutTitle}>About Me</ThemedText>
           <ThemedText style={styles.aboutText}>
-            Third-year dual degree student at BITS Pilani with an 8.0 CGPA, combining chemistry research with 
+            Third-year dual degree student at BITS Goa with an 8.0 CGPA, combining chemistry research with 
             cutting-edge technology. Building solutions that bridge the gap between science 
             and software, with a focus on mental health, sustainability, and innovation.
           </ThemedText>
@@ -346,6 +346,9 @@ export default function IndexScreen() {
           "Building the future, one line of code at a time" ✨
         </ThemedText>
       </Animated.View>
+
+      {/* Bottom Spacer */}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }
