@@ -7,6 +7,7 @@ import {
   Alert,
   ScrollView,
   Dimensions,
+  Image,
 } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -21,107 +22,129 @@ import Animated, {
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { globalStyles, COLORS } from '@/styles/globalStyles';
-import { useRouter } from 'expo-router'; // Added router import
-
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
-
-// Animated Card Component
-interface AnimatedCardProps {
+// Enhanced Project Card Component
+interface ProjectCardProps {
   title: string;
   description: string;
-  details: string[];
+  metric: string;
   icon: string;
   color: string;
   delay?: number;
 }
 
-
-const AnimatedCard: React.FC<AnimatedCardProps> = ({
+const ProjectCard: React.FC<ProjectCardProps> = ({
   title,
   description,
-  details,
+  metric,
   icon,
   color,
   delay = 0,
 }) => {
   const scale = useSharedValue(1);
-  const rotation = useSharedValue(0);
-
+  const rotateY = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       { scale: scale.value },
-      { rotateY: `${rotation.value}deg` },
+      { rotateY: `${rotateY.value}deg` },
     ],
   }));
-
 
   const handlePress = () => {
     scale.value = withSpring(0.95, {}, () => {
       scale.value = withSpring(1);
     });
-    rotation.value = withTiming(5, { duration: 100 }, () => {
-      rotation.value = withTiming(0, { duration: 100 });
+    rotateY.value = withTiming(10, { duration: 150 }, () => {
+      rotateY.value = withTiming(0, { duration: 150 });
     });
   };
-
 
   return (
     <Animated.View 
       entering={FadeInUp.delay(delay).springify()}
-      style={[styles.card, animatedStyle]}
+      style={[styles.projectCard, animatedStyle]}
     >
-      <TouchableOpacity onPress={handlePress} style={styles.cardContent}>
-        <View style={styles.cardHeader}>
-          <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
-            <ThemedText style={styles.cardIcon}>{icon}</ThemedText>
+      <TouchableOpacity onPress={handlePress} style={styles.projectContent}>
+        <View style={styles.projectHeader}>
+          <View style={[styles.iconContainer, { backgroundColor: `${color}20`, borderColor: color }]}>
+            <ThemedText style={styles.projectIcon}>{icon}</ThemedText>
           </View>
-          <View style={styles.titleContainer}>
-            <ThemedText style={[styles.cardTitle, { color }]}>{title}</ThemedText>
-            <ThemedText style={styles.cardDescription}>{description}</ThemedText>
+          <View style={styles.projectInfo}>
+            <ThemedText style={[styles.projectTitle, { color }]}>{title}</ThemedText>
+            <ThemedText style={styles.projectDescription}>{description}</ThemedText>
           </View>
         </View>
-        
-        <View style={styles.detailsContainer}>
-          {details.map((detail, index) => (
-            <View key={index} style={styles.listItem}>
-              <View style={[styles.bullet, { backgroundColor: color }]} />
-              <ThemedText style={styles.listText}>{detail}</ThemedText>
-            </View>
-          ))}
+        <View style={[styles.metricContainer, { backgroundColor: `${color}10` }]}>
+          <ThemedText style={[styles.projectMetric, { color }]}>{metric}</ThemedText>
         </View>
       </TouchableOpacity>
     </Animated.View>
   );
 };
 
+// Photo Gallery Component
+const PhotoGallery = () => {
+  const photos = [
+    require('../../assets/Photos/1.jpg'),
+    require('../../assets/Photos/2.jpg'),
+    require('../../assets/Photos/3.jpg'),
+  ];
 
-// Floating Element Component
+  return (
+    <Animated.View entering={FadeInUp.delay(500).springify()} style={styles.photoGallery}>
+      {/* <ThemedText style={styles.photoTitle}>Meet Ayush</ThemedText> */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.photoScrollContainer}
+      >
+        {/* {photos.map((photo, index) => (
+          <Animated.View 
+            key={index}
+            entering={FadeInUp.delay(600 + index * 100).springify()}
+            style={styles.photoWrapper}
+          >
+            <Image source={photo} style={styles.profilePhoto} resizeMode="cover" />
+          </Animated.View>
+        ))} */}
+      </ScrollView>
+    </Animated.View>
+  );
+};
+
+// Enhanced Floating Element Component
 interface FloatingElementProps {
   emoji: string;
   style: any;
 }
 
-
 const FloatingElement: React.FC<FloatingElementProps> = ({ emoji, style }) => {
   const translateY = useSharedValue(0);
-
+  const rotate = useSharedValue(0);
 
   useEffect(() => {
     translateY.value = withRepeat(
-      withTiming(-10, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
+      withTiming(-12, { duration: 3500, easing: Easing.inOut(Easing.ease) }),
       -1,
       true
     );
+    rotate.value = withRepeat(
+      withTiming(360, { duration: 8000, easing: Easing.linear }),
+      -1,
+      false
+    );
   }, []);
 
-
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
+    transform: [
+      { translateY: translateY.value },
+      { rotate: `${rotate.value}deg` }
+    ],
   }));
-
 
   return (
     <Animated.View style={[style, animatedStyle]}>
@@ -130,77 +153,70 @@ const FloatingElement: React.FC<FloatingElementProps> = ({ emoji, style }) => {
   );
 };
 
-
-// Stats Component
+// Enhanced Stats Component with Gradient
 const Stats = () => {
   const stats = [
-    { label: 'CGPA', value: '8.0' },
-    { label: 'Projects', value: '8+' },
-    { label: 'Users', value: '3.5K+' },
-    { label: 'Year', value: '2025' },
+    { label: 'CGPA', value: '8+', color: COLORS.accent },
+    { label: 'Users', value: '4K+', color: COLORS.green },
+    { label: 'Research', value: 'M.A.C+CHEM', color: COLORS.purple },
+    { label: 'Year', value: '3rd', color: COLORS.blue },
   ];
 
-
   return (
-    <Animated.View entering={FadeInDown.delay(600).springify()} style={styles.statsContainer}>
+    <Animated.View entering={FadeInDown.delay(400).springify()} style={styles.statsContainer}>
       {stats.map((stat, index) => (
-        <View key={index} style={styles.statItem}>
-          <ThemedText style={styles.statValue}>{stat.value}</ThemedText>
+        <Animated.View 
+          key={index}
+          entering={FadeInUp.delay(500 + index * 100).springify()}
+          style={[styles.statItem, { borderLeftColor: stat.color }]}
+        >
+          <ThemedText style={[styles.statValue, { color: stat.color }]}>{stat.value}</ThemedText>
           <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>
-        </View>
+        </Animated.View>
       ))}
     </Animated.View>
   );
 };
 
-
-// Social Button Component
+// Enhanced Social Button Component
 interface SocialButtonProps {
   label: string;
   url: string;
+  icon: string;
   delay?: number;
 }
 
-
-const SocialButton: React.FC<SocialButtonProps> = ({ label, url, delay = 0 }) => {
+const SocialButton: React.FC<SocialButtonProps> = ({ label, url, icon, delay = 0 }) => {
   const scale = useSharedValue(1);
-
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
-
 
   const handlePress = () => {
     scale.value = withSpring(0.9, {}, () => {
       scale.value = withSpring(1);
     });
     
-    if (url) {
-      Linking.openURL(url).catch(() => {
-        Alert.alert('Error', 'Could not open link');
-      });
-    } else {
-      Alert.alert('Coming Soon', `${label} link will be available soon`);
-    }
+    Linking.openURL(url).catch(() => {
+      Alert.alert('Error', 'Could not open link');
+    });
   };
-
 
   return (
     <Animated.View entering={FadeInUp.delay(delay).springify()} style={animatedStyle}>
       <TouchableOpacity onPress={handlePress} style={styles.socialButton}>
+        <ThemedText style={styles.socialIcon}>{icon}</ThemedText>
         <ThemedText style={styles.socialButtonText}>{label}</ThemedText>
       </TouchableOpacity>
     </Animated.View>
   );
 };
 
-
 // Main Component
 export default function IndexScreen() {
   const waveAnimation = useSharedValue(0);
-  const router = useRouter(); // Added router hook
-
+  const router = useRouter();
 
   useEffect(() => {
     waveAnimation.value = withRepeat(
@@ -210,202 +226,574 @@ export default function IndexScreen() {
     );
   }, []);
 
-
   const waveStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        rotate: `${waveAnimation.value * 20 - 10}deg`,
-      },
-    ],
+    transform: [{ rotate: `${waveAnimation.value * 20 - 10}deg` }],
   }));
 
-
-  // Function to handle moderator page navigation
   const handleModeratorNavigation = () => {
     router.push('/moderator');
   };
 
-
-  const cardData = [
+  const projectData = [
     {
-      title: 'Student & Developer',
-      description: 'Dual degree at BITS Pilani Goa',
-      details: [
-        'M.Sc. Chemistry, B.E. Math & Computing',
-        'Third-year integrated program',
-        'Research in electrocatalysis & ML',
-      ],
-      icon: '🎓',
+      title: 'BITS Student Store',
+      description: 'Campus marketplace revolutionizing student trading. Present in all 4 campuses.',
+      metric: '4000+ active users',
+      icon: '🛒',
       color: COLORS.accent,
     },
     {
-      title: 'Entrepreneur',
-      description: 'Building solutions that matter',
-      details: [
-        'Co-founder of BITS Pawn Shop',
-        '3.5K+ active users across campuses',
-        'Expanding to multiple BITS locations',
-      ],
-      icon: '🚀',
-      color: COLORS.green,
-    },
-    {
-      title: 'Researcher',
-      description: 'Chemistry meets machine learning',
-      details: [
-        'ML models for electrocatalyst discovery',
-        'Co-authoring research papers',
-        'Combining chemistry with AI',
-      ],
-      icon: '🔬',
+      title: 'ML Research',
+      description: 'Electrocatalyst discovery with Chemistry HOD',
+      metric: 'Co-authoring paper',
+      icon: '🧬',
       color: COLORS.purple,
     },
     {
-      title: 'Creator',
-      description: 'Content, fitness & trading',
-      details: [
-        'Mental health advocacy',
-        'Algorithmic trading systems',
-        'Fitness app development',
-      ],
-      icon: '💪',
-      color: COLORS.blue,
+      title: 'Leadership Excellence',
+      description: 'Chief Coordinator FitSoc & Sports Board Head',
+      metric: '80+ team members',
+      icon: '👑',
+      color: COLORS.green,
     },
+    
   ];
-
 
   const socialLinks = [
-    { label: 'LinkedIn', url: 'https://www.linkedin.com/in/ayushsanger/' },
-    { label: 'Instagram', url: 'https://www.instagram.com/sanger_ayush' },
-    { label: 'GitHub', url: 'https://github.com/SangerForCode' },
-    { label: 'Schedule', url: 'https://calendly.com/f20230742-goa' },
+    { label: 'LinkedIn', url: 'https://www.linkedin.com/in/ayushsanger/', icon: '💼' },
+    { label: 'GitHub', url: 'https://github.com/SangerForCode', icon: '⚡' },
+    { label: 'Schedule', url: 'https://calendly.com/f20230742-goa', icon: '📅' },
   ];
-
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Floating Elements */}
-      <FloatingElement emoji="💻" style={styles.float1} />
-      <FloatingElement emoji="🧪" style={styles.float2} />
+      {/* Enhanced Floating Elements */}
+      <FloatingElement emoji="⚗️" style={styles.float1} />
+      <FloatingElement emoji="💻" style={styles.float2} />
       <FloatingElement emoji="🚀" style={styles.float3} />
+      <FloatingElement emoji="📱" style={styles.float4} />
 
-
-      {/* Header */}
+      {/* Header with Gradient Effect */}
       <Animated.View entering={FadeInUp.springify()} style={styles.header}>
-        <View style={styles.nameContainer}>
-          <ThemedText style={styles.firstName}>Ayush</ThemedText>
-          <ThemedText style={styles.lastName}>Sanger</ThemedText>
-          <Animated.View style={[styles.waveContainer, waveStyle]}>
-            <ThemedText style={styles.wave}>👋</ThemedText>
-          </Animated.View>
+        <View style={styles.headerGradient}>
+          <View style={styles.nameContainer}>
+            <ThemedText style={styles.firstName}>Ayush</ThemedText>
+            <ThemedText style={styles.lastName}>Sanger</ThemedText>
+            <Animated.View style={[styles.waveContainer, waveStyle]}>
+              <ThemedText style={styles.wave}>👋</ThemedText>
+            </Animated.View>
+          </View>
+          <ThemedText style={styles.tagline}>
+            🧬 Chemistry • 💻 Code • 🚀 Innovation
+          </ThemedText>
+          <ThemedText style={styles.location}>📍 BITS Pilani, Goa Campus</ThemedText>
         </View>
-        <ThemedText style={styles.tagline}>
-          Creating impact through technology & innovation
-        </ThemedText>
-        <ThemedText style={styles.location}>📍 BITS Pilani, Goa Campus</ThemedText>
       </Animated.View>
 
+      {/* Photo Gallery */}
+      <PhotoGallery />
 
-      {/* Stats */}
+      {/* Enhanced Stats */}
       <Stats />
 
+      {/* About Section with Better Design */}
+      <Animated.View entering={FadeInUp.delay(700).springify()} style={styles.aboutCard}>
+        <View style={styles.aboutHeader}>
+          <ThemedText style={styles.aboutTitle}>Dual Degree Scholar</ThemedText>
+          <ThemedText style={styles.aboutEmoji}>🎓</ThemedText>
+        </View>
+        <ThemedText style={styles.aboutText}>
+          <ThemedText style={styles.highlight}>M.Sc. Chemistry</ThemedText> + <ThemedText style={styles.highlight}>B.E. Mathematics & Computing</ThemedText>
+          {'\n\n'}
+          Building solutions at the intersection of molecular science and machine learning, 
+          with focus on sustainable technology and campus innovation.
+        </ThemedText>
+      </Animated.View>
 
-      {/* About Card */}
-      <Animated.View entering={FadeInUp.delay(800).springify()} style={styles.aboutCard}>
-        <TouchableOpacity 
-          onPress={() => {
-            const { router } = require('expo-router');
-            router.push('/love');
-          }}
-        >
-          <ThemedText style={styles.aboutTitle}>About Me</ThemedText>
-          <ThemedText style={styles.aboutText}>
-            Third-year dual degree student at BITS Goa with an 8.0 CGPA, combining chemistry research with 
-            cutting-edge technology. Building solutions that bridge the gap between science 
-            and software, with a focus on mental health, sustainability, and innovation.
-          </ThemedText>
-        </TouchableOpacity>
-        
-        <View style={styles.currentlyContainer}>
-          <ThemedText style={styles.currentlyTitle}>Currently Working On:</ThemedText>
-          <View style={styles.currentItems}>
-            <View style={styles.currentItem}>
-              <ThemedText style={styles.currentDot}>•</ThemedText>
-              <ThemedText style={styles.currentText}>BITS Pawn Shop expansion</ThemedText>
+      {/* Enhanced Projects Grid */}
+      <View style={styles.projectsSection}>
+        <ThemedText style={styles.sectionTitle}>🌟 Key Projects</ThemedText>
+        {projectData.map((project, index) => (
+          <ProjectCard
+            key={index}
+            {...project}
+            delay={900 + index * 100}
+          />
+        ))}
+      </View>
+
+      {/* Enhanced Tech Stack */}
+      <Animated.View entering={FadeInUp.delay(1300).springify()} style={styles.techStackCard}>
+        <View style={styles.techHeader}>
+          <ThemedText onPress={handleModeratorNavigation} style={styles.techTitle}>💻 Tech Arsenal</ThemedText>
+        </View>
+        <View style={styles.techGrid}>
+          <View style={styles.techCategory}>
+            <ThemedText style={styles.techCategoryTitle}>🔥 Frontend</ThemedText>
+            <View style={styles.techTags}>
+              <View style={styles.techTag}><ThemedText style={styles.techTagText}>React.js</ThemedText></View>
+              <View style={styles.techTag}><ThemedText style={styles.techTagText}>React Native</ThemedText></View>
+              <View style={styles.techTag}><ThemedText style={styles.techTagText}>JavaScript</ThemedText></View>
             </View>
-            <View style={styles.currentItem}>
-              <ThemedText style={styles.currentDot}>•</ThemedText>
-              <ThemedText style={styles.currentText}>FITSOC fitness app</ThemedText>
+          </View>
+          <View style={styles.techCategory}>
+            <ThemedText style={styles.techCategoryTitle}>⚡ Backend</ThemedText>
+            <View style={styles.techTags}>
+              <View style={styles.techTag}><ThemedText style={styles.techTagText}>Python</ThemedText></View>
+              <View style={styles.techTag}><ThemedText style={styles.techTagText}>Django</ThemedText></View>
+              <View style={styles.techTag}><ThemedText style={styles.techTagText}>Flask</ThemedText></View>
             </View>
-            <View style={styles.currentItem}>
-              <ThemedText style={styles.currentDot}>•</ThemedText>
-              <ThemedText style={styles.currentText}>Algorithmic trading systems</ThemedText>
+          </View>
+          <View style={styles.techCategory}>
+            <ThemedText style={styles.techCategoryTitle}>🤖 AI/ML</ThemedText>
+            <View style={styles.techTags}>
+              <View style={styles.techTag}><ThemedText style={styles.techTagText}>TensorFlow</ThemedText></View>
+              <View style={styles.techTag}><ThemedText style={styles.techTagText}>Scikit-learn</ThemedText></View>
+              <View style={styles.techTag}><ThemedText style={styles.techTagText}>Pandas</ThemedText></View>
             </View>
           </View>
         </View>
       </Animated.View>
 
-
-      {/* Cards Grid */}
-      <View style={styles.cardsGrid}>
-        {cardData.map((card, index) => (
-          <AnimatedCard
-            key={index}
-            {...card}
-            delay={1000 + index * 150}
-          />
-        ))}
-      </View>
-
-
-      {/* Social Section */}
-      <Animated.View entering={FadeInUp.delay(1800).springify()} style={styles.socialSection}>
-        <ThemedText style={styles.socialTitle}>Let's Connect</ThemedText>
-        <ThemedText style={styles.socialSubtitle}>
-          Always open to discussing new opportunities, collaborations, 
-          or just having a chat about tech and innovation
-        </ThemedText>
-        
+      {/* Enhanced Social Section */}
+      <Animated.View entering={FadeInUp.delay(1500).springify()} style={styles.socialSection}>
+        <ThemedText style={styles.socialTitle}>🤝 Let's Connect</ThemedText>
         <View style={styles.socialButtons}>
           {socialLinks.map((link, index) => (
             <SocialButton
               key={index}
               {...link}
-              delay={2000 + index * 100}
+              delay={1700 + index * 100}
             />
           ))}
         </View>
       </Animated.View>
 
+      {/* Enhanced Footer */}
+      <Animated.View entering={FadeInUp.delay(1900).springify()} style={styles.footer}>
+  <TouchableOpacity style={styles.footerButton} onPress={() => {
+    const instaUrl = 'https://www.instagram.com/sanger_ayush';
+    Linking.openURL(instaUrl).catch(() => {
+      Alert.alert('Error', 'Could not open Instagram profile.');
+    });
+  }}>
+    <ThemedText style={styles.footerEmail}>📸 @sanger_ayush</ThemedText>
+    <ThemedText style={styles.footerSubtext}>Tap to connect on Instagram</ThemedText>
+  </TouchableOpacity>
+</Animated.View>
 
-      {/* Footer - Made Clickable */}
-      <Animated.View entering={FadeInUp.delay(2500).springify()} style={styles.footer}>
-        <TouchableOpacity onPress={handleModeratorNavigation}>
-          <ThemedText style={[styles.footerText, styles.clickableFooter]}>
-            "Building the future, one line of code at a time" ✨
-          </ThemedText>
-        </TouchableOpacity>
-      </Animated.View>
 
-
-      {/* Bottom Spacer */}
-      <View style={{ height: 100 }} />
+      <View style={{ height: 80 }} />
     </ScrollView>
   );
 }
 
-
 const styles = StyleSheet.create({
   ...globalStyles,
-  // Only index-specific overrides where necessary
-  header: {
-    ...globalStyles.header,
-    alignItems: 'center' as const,
-    paddingBottom: 40,
+  
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
   },
-  // Added style for clickable footer
-  clickableFooter: {
-    textDecorationLine: 'underline' as const,
+
+  // Enhanced Header Styles
+  header: {
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingTop: 60,
+    paddingBottom: 20,
+  },
+
+  headerGradient: {
+    alignItems: 'center',
+    padding: 24,
+    borderRadius: 20,
+    backgroundColor: `${COLORS.accent}05`,
+    borderWidth: 1,
+    borderColor: `${COLORS.accent}20`,
+  },
+
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  firstName: {
+    fontSize: 38,
+    fontWeight: '300',
+    color: COLORS.white,
+    marginRight: 8,
+  },
+
+  lastName: {
+    fontSize: 38,
+    fontWeight: '700',
+    color: COLORS.accent,
+    marginRight: 12,
+  },
+
+  waveContainer: {
+    marginLeft: 8,
+  },
+
+  wave: {
+    fontSize: 34,
+  },
+
+  tagline: {
+    fontSize: 16,
+    color: COLORS.textLight,
+    textAlign: 'center',
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+
+  location: {
+    fontSize: 14,
+    color: COLORS.textLight,
     opacity: 0.8,
+  },
+
+  // Photo Gallery Styles
+  photoGallery: {
+    paddingVertical: 20,
+    marginBottom: 20,
+  },
+
+  photoTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.white,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+
+  photoScrollContainer: {
+    paddingHorizontal: 32,
+    gap: 16,
+  },
+
+  photoWrapper: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: COLORS.accent,
+  },
+
+  profilePhoto: {
+    width: 120,
+    height: 120,
+    borderRadius: 14,
+  },
+
+  // Enhanced Stats
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 32,
+    paddingVertical: 20,
+    marginBottom: 30,
+  },
+
+  statItem: {
+    alignItems: 'center',
+    paddingLeft: 12,
+    borderLeftWidth: 3,
+  },
+
+  statValue: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+
+  statLabel: {
+    fontSize: 11,
+    color: COLORS.textLight,
+    textAlign: 'center',
+  },
+
+  // Enhanced About Card
+  aboutCard: {
+    backgroundColor: COLORS.gray,
+    borderRadius: 20,
+    padding: 28,
+    marginHorizontal: 32,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: `${COLORS.accent}20`,
+  },
+
+  aboutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+
+  aboutTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: COLORS.white,
+    marginRight: 8,
+  },
+
+  aboutEmoji: {
+    fontSize: 24,
+  },
+
+  aboutText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: COLORS.textLight,
+    textAlign: 'center',
+  },
+
+  highlight: {
+    color: COLORS.accent,
+    fontWeight: '600',
+  },
+
+  // Enhanced Projects
+  projectsSection: {
+    paddingHorizontal: 32,
+    marginBottom: 30,
+  },
+
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: COLORS.white,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+
+  projectCard: {
+    backgroundColor: COLORS.gray,
+    borderRadius: 16,
+    marginBottom: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: `${COLORS.accent}10`,
+  },
+
+  projectContent: {
+    padding: 20,
+  },
+
+  projectHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  iconContainer: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    borderWidth: 2,
+  },
+
+  projectIcon: {
+    fontSize: 26,
+  },
+
+  projectInfo: {
+    flex: 1,
+  },
+
+  projectTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+
+  projectDescription: {
+    fontSize: 13,
+    color: COLORS.textLight,
+    lineHeight: 18,
+  },
+
+  metricContainer: {
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+
+  projectMetric: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // Enhanced Tech Stack
+  techStackCard: {
+    backgroundColor: COLORS.gray,
+    borderRadius: 20,
+    padding: 28,
+    marginHorizontal: 32,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: `${COLORS.accent}20`,
+  },
+
+  techHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  techTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: COLORS.white,
+  },
+
+  techGrid: {
+    gap: 16,
+  },
+
+  techCategory: {
+    backgroundColor: COLORS.background,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: `${COLORS.accent}10`,
+  },
+
+  techCategoryTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.accent,
+    marginBottom: 12,
+  },
+
+  techTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+
+  techTag: {
+    backgroundColor: `${COLORS.accent}15`,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: `${COLORS.accent}30`,
+  },
+
+  techTagText: {
+    fontSize: 12,
+    color: COLORS.accent,
+    fontWeight: '500',
+  },
+
+  // Enhanced Social Section
+  socialSection: {
+    paddingHorizontal: 32,
+    marginBottom: 30,
+  },
+
+  socialTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.white,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+
+  socialButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.gray,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: COLORS.accent,
+  },
+
+  socialIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+
+  socialButtonText: {
+    fontSize: 14,
+    color: COLORS.accent,
+    fontWeight: '500',
+  },
+
+  // Enhanced Footer
+  footer: {
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 20,
+  },
+
+  footerButton: {
+    alignItems: 'center',
+    backgroundColor: COLORS.gray,
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: `${COLORS.accent}20`,
+  },
+
+  footerEmail: {
+    fontSize: 14,
+    color: COLORS.accent,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+
+  footerSubtext: {
+    fontSize: 11,
+    color: COLORS.textLight,
+    opacity: 0.7,
+  },
+
+  // Enhanced Floating Elements
+  float1: {
+    position: 'absolute',
+    top: 140,
+    left: 20,
+    zIndex: 0,
+  },
+
+  float2: {
+    position: 'absolute',
+    top: 220,
+    right: 30,
+    zIndex: 0,
+  },
+
+  float3: {
+    position: 'absolute',
+    top: 400,
+    left: 40,
+    zIndex: 0,
+  },
+
+  float4: {
+    position: 'absolute',
+    top: 600,
+    right: 20,
+    zIndex: 0,
+  },
+
+  floatingEmoji: {
+    fontSize: 28,
+    opacity: 0.4,
   },
 });
