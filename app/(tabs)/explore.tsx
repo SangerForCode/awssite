@@ -1,34 +1,39 @@
-import React, { useState } from 'react';
-import { StyleSheet, Dimensions, Pressable, ScrollView, View } from 'react-native';
+import { ThemedText } from '@/components/ThemedText';
+import { COLORS, globalStyles } from '@/styles/globalStyles';
+import React from 'react';
+import { Dimensions, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   FadeInDown,
   FadeInUp,
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { globalStyles, COLORS } from '@/styles/globalStyles';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Import logos from local assets
+const FitSocLogo = require('C:/APP/testinng/aws/awssite/assets/Photos/fitsoc.jpg');
+const SportsBoardLogo = require('C:/APP/testinng/aws/awssite/assets/Photos/sportsboard.jpg');
+const StudentStoreLogo = require('C:/APP/testinng/aws/awssite/assets/Photos/studentstore.jpg');
 
 // Timeline Card Component
 interface TimelineCardProps {
   year: string;
   title: string;
   description: string;
+  logo?: any;
   delay?: number;
   isLast?: boolean;
 }
 
-const TimelineCard: React.FC<TimelineCardProps> = ({ 
-  year, 
-  title, 
-  description, 
+const TimelineCard: React.FC<TimelineCardProps> = ({
+  year,
+  title,
+  description,
+  logo,
   delay = 0,
-  isLast = false 
+  isLast = false,
 }) => {
   const scale = useSharedValue(1);
 
@@ -45,23 +50,28 @@ const TimelineCard: React.FC<TimelineCardProps> = ({
   return (
     <Animated.View entering={FadeInUp.delay(delay).springify()}>
       <View style={styles.timelineItem}>
-        {/* Timeline Line */}
         {!isLast && <View style={styles.timelineLine} />}
-        
-        {/* Timeline Dot */}
         <View style={styles.timelineDot} />
-        
-        {/* Content Card */}
+
         <Animated.View style={[styles.timelineCard, animatedStyle]}>
           <Pressable onPress={handlePress} style={styles.cardPressable}>
-            <View style={styles.cardHeader}>
-              <ThemedText style={styles.yearText}>{year}</ThemedText>
-              <View style={styles.yearBadge}>
-                <ThemedText style={styles.yearBadgeText}>•</ThemedText>
+            <View style={styles.cardContentContainer}>
+              {/* Left Content */}
+              <View style={styles.leftContent}>
+                <View style={styles.cardHeader}>
+                  <ThemedText style={styles.yearText}>{year}</ThemedText>
+                </View>
+                <ThemedText style={styles.titleText}>{title}</ThemedText>
+                <ThemedText style={styles.descriptionText}>{description}</ThemedText>
               </View>
+
+              {/* Right Logo */}
+              {logo && (
+                <View style={styles.rightLogoContainer}>
+                  <Image source={logo} style={styles.logoImageLarge} resizeMode="contain" />
+                </View>
+              )}
             </View>
-            <ThemedText style={styles.titleText}>{title}</ThemedText>
-            <ThemedText style={styles.descriptionText}>{description}</ThemedText>
           </Pressable>
         </Animated.View>
       </View>
@@ -70,17 +80,18 @@ const TimelineCard: React.FC<TimelineCardProps> = ({
 };
 
 // Stats Component
-const Stats = () => {
+const Stats: React.FC = () => {
   const stats = [
-    { label: 'Years', value: '5' },
-    { label: 'Degrees', value: '2' },
+    { label: 'CGPA', value: '8+' },
+    { label: 'Leadership Roles', value: '12+' },
+    { label: 'Major Projects', value: '8' },
     { label: 'Campus', value: 'GOA' },
   ];
 
   return (
     <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.statsContainer}>
-      {stats.map((stat, index) => (
-        <View key={index} style={styles.statItem}>
+      {stats.map((stat, idx) => (
+        <View key={idx} style={styles.statItem}>
           <ThemedText style={styles.statValue}>{stat.value}</ThemedText>
           <ThemedText style={styles.statLabel}>{stat.label}</ThemedText>
         </View>
@@ -89,33 +100,61 @@ const Stats = () => {
   );
 };
 
-// Main Component
-export default function ExploreScreen() {
-  const timelineData = [
+// Main Screen
+export default function AyushJourneyScreen() {
+  const timelineData: TimelineCardProps[] = [
     {
-      year: '2021',
-      title: 'Started Journey',
-      description: 'Joined BITS Pilani Goa with Chemistry. New beginnings in paradise.',
+      year: '2020',
+      title: 'Academic Foundation',
+      description:
+        'Achieved exceptional academic performance in CBSE Class 10th Board Exam from Cambridge School Noida.',
+      delay: 600,
     },
     {
-      year: '2022', 
-      title: 'Dual Degree',
-      description: 'Added Math & Computing. Discovered the beauty of code and algorithms.',
+      year: '2022',
+      title: 'Pre-University Excellence',
+      description:
+        'Secured outstanding results in Class 12th with specialization in Physics, Chemistry, Mathematics, and Biology.',
+      delay: 700,
     },
     {
       year: '2023',
-      title: 'Research Phase',
-      description: 'Applied ML to chemistry research. Published papers on electrocatalysis.',
+      title: 'BITS Journey Begins',
+      description:
+        'Started dual-degree program at BITS Pilani Goa Campus combining M.Sc. Chemistry with B.E. Mathematics and Computing.',
+      delay: 800,
     },
     {
       year: '2024',
-      title: 'Building Things',
-      description: 'Co-founded ventures, built apps, started creating content.',
+      title: 'Leadership Development',
+      description:
+        'Advanced to core positions while developing technical expertise through research projects and internships.',
+      delay: 900,
     },
     {
       year: '2025',
-      title: 'Current Focus',
-      description: 'Mental health apps, trading, fitness. The journey continues.',
+      title: 'Chief Coordinator - FitSoc',
+      description:
+        'Leading the premier fitness society of BITS Goa, managing comprehensive fitness programs and wellness initiatives for the entire campus community.',
+      logo: FitSocLogo,
+      delay: 1000,
+    },
+    {
+      year: '2025',
+      title: 'Chief of Sports Board - BITS Goa',
+      description:
+        'Overseeing sports activities and athletic programs across BITS Goa campus, coordinating intra-college competitions and promoting sports culture.',
+      logo: SportsBoardLogo,
+      delay: 1100,
+    },
+    {
+      year: '2025',
+      title: 'Co-Founder - BITS Student Store',
+      description:
+        'Pioneered innovative online resale platform (bits-pilani.store) serving 4000+ active users across BITS campuses, promoting sustainable peer-to-peer transactions.',
+      logo: StudentStoreLogo,
+      delay: 1200,
+      isLast: true,
     },
   ];
 
@@ -123,59 +162,46 @@ export default function ExploreScreen() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <Animated.View entering={FadeInUp.springify()} style={styles.header}>
-        <ThemedText style={styles.headerTitle}>Journey</ThemedText>
-        <ThemedText style={styles.headerSubtitle}>BITS Pilani • Goa Campus</ThemedText>
+        <ThemedText style={styles.headerTitle}>Journey & Achievements</ThemedText>
+        <ThemedText style={styles.headerSubtitle}>A Timeline of Growth and Leadership</ThemedText>
+        <ThemedText style={styles.headerDescription}>
+          BITS Pilani Goa Campus • Dual Degree Program
+        </ThemedText>
       </Animated.View>
 
       {/* Stats */}
       <Stats />
 
-      {/* About Card */}
+      {/* About */}
       <Animated.View entering={FadeInUp.delay(400).springify()} style={styles.aboutCard}>
         <View style={styles.aboutContent}>
-          <ThemedText style={styles.aboutTitle}>Dual Degree Student</ThemedText>
+          <ThemedText style={styles.aboutTitle}>Dual Degree Program</ThemedText>
           <ThemedText style={styles.aboutText}>
-            Chemistry + Mathematics & Computing{'\n'}
-            Combining molecular science with computational thinking
+            <ThemedText style={styles.boldText}>M.Sc. Chemistry</ThemedText> +{' '}
+            <ThemedText style={styles.boldText}>B.E. Mathematics & Computing</ThemedText>
+            {'\n'}Expected Graduation: <ThemedText style={styles.boldText}>August 2028</ThemedText>
           </ThemedText>
-          <View style={styles.tagContainer}>
-            <View style={styles.tag}>
-              <ThemedText style={styles.tagText}>Research</ThemedText>
-            </View>
-            <View style={styles.tag}>
-              <ThemedText style={styles.tagText}>Development</ThemedText>
-            </View>
-            <View style={styles.tag}>
-              <ThemedText style={styles.tagText}>Innovation</ThemedText>
-            </View>
-          </View>
         </View>
       </Animated.View>
 
       {/* Timeline */}
       <View style={styles.timelineContainer}>
-        {timelineData.map((item, index) => (
-          <TimelineCard
-            key={index}
-            {...item}
-            delay={600 + index * 100}
-            isLast={index === timelineData.length - 1}
-          />
+        {timelineData.map((item, idx) => (
+          <TimelineCard key={idx} {...item} />
         ))}
       </View>
 
       {/* Footer */}
-      <Animated.View entering={FadeInUp.delay(1200).springify()} style={styles.footer}>
+      <Animated.View entering={FadeInUp.delay(1400).springify()} style={styles.footer}>
         <View style={styles.footerContent}>
           <ThemedText style={styles.footerEmoji}>🚀</ThemedText>
           <ThemedText style={styles.footerText}>
-            Building the future, one line of code at a time
+            Bridging analytical thinking with computational innovation to create meaningful impact across multiple domains.
           </ThemedText>
         </View>
       </Animated.View>
 
-      {/* Bottom Spacer */}
-      <View style={{ height: 100 }} />
+      <View style={{ height: 80 }} />
     </ScrollView>
   );
 }
@@ -183,82 +209,211 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   ...globalStyles,
 
-  // Page-specific styles
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+
+  header: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 30,
+  },
+
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '900',
+    color: COLORS.white,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+
+  headerSubtitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: COLORS.accent,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+
+  headerDescription: {
+    fontSize: 16,
+    color: COLORS.textLight,
+    textAlign: 'center',
+  },
+
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 24,
+    paddingVertical: 25,
+    marginBottom: 25,
+  },
+
+  statItem: {
+    alignItems: 'center',
+  },
+
+  statValue: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: COLORS.accent,
+    marginBottom: 6,
+  },
+
+  statLabel: {
+    fontSize: 13,
+    color: COLORS.textLight,
+    textAlign: 'center',
+  },
+
+  aboutCard: {
+    backgroundColor: COLORS.gray,
+    borderRadius: 20,
+    padding: 28,
+    marginHorizontal: 24,
+    marginBottom: 30,
+  },
+
+  aboutContent: {
+    flexDirection: 'column',
+  },
+
+  aboutTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.white,
+    marginBottom: 16,
+  },
+
+  aboutText: {
+    fontSize: 16,
+    color: COLORS.textLight,
+    lineHeight: 24,
+  },
+
+  boldText: {
+    fontWeight: '700',
+    color: COLORS.accent,
+  },
+
   timelineContainer: {
     paddingHorizontal: 24,
     paddingBottom: 40,
   },
+
   timelineItem: {
     position: 'relative',
-    paddingLeft: 40,
-    marginBottom: 24,
+    paddingLeft: 45,
+    marginBottom: 30,
   },
+
   timelineCard: {
     backgroundColor: COLORS.gray,
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
   },
-  aboutCard: {
-    ...globalStyles.card,
-    marginBottom: 40,
+
+  cardPressable: {
+    padding: 24,
   },
-  aboutContent: {
+
+  // New layout styles for logo positioning
+  cardContentContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+
+  leftContent: {
     flex: 1,
+    paddingRight: 16,
   },
-  aboutTitle: {
-    ...globalStyles.cardTitle,
+
+  rightLogoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 100,
   },
-  aboutText: {
-    ...globalStyles.cardText,
-    marginBottom: 20,
+
+  logoImageLarge: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: COLORS.accent,
   },
+
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  yearText: {
+    fontSize: 16,
+    color: COLORS.accent,
+    fontWeight: '700',
+    marginRight: 12,
+  },
+
+  titleText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.white,
+    marginBottom: 8,
+  },
+
   descriptionText: {
-    fontSize: 14,
+    fontSize: 16,
     color: COLORS.textLight,
-    lineHeight: 20,
+    lineHeight: 22,
   },
+
   timelineLine: {
     position: 'absolute',
-    left: 15,
-    top: 32,
-    bottom: -24,
-    width: 2,
-    backgroundColor: COLORS.gray,
-  },
-  timelineDot: {
-    position: 'absolute',
-    left: 11,
-    top: 16,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    left: 18,
+    top: 35,
+    bottom: -30,
+    width: 3,
     backgroundColor: COLORS.accent,
   },
-  yearText: {
-    fontSize: 14,
-    color: COLORS.accent,
-    fontWeight: '600',
-    marginRight: 8,
+
+  timelineDot: {
+    position: 'absolute',
+    left: 13,
+    top: 20,
+    width: 13,
+    height: 13,
+    borderRadius: 7,
+    backgroundColor: COLORS.accent,
+    borderWidth: 3,
+    borderColor: COLORS.background,
   },
-  yearBadge: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.text,
-    justifyContent: 'center',
+
+  footer: {
+    paddingHorizontal: 24,
+    paddingVertical: 35,
+  },
+
+  footerContent: {
     alignItems: 'center',
+    backgroundColor: COLORS.gray,
+    borderRadius: 20,
+    padding: 28,
   },
-  yearBadgeText: {
-    fontSize: 8,
-    color: COLORS.text,
+
+  footerEmoji: {
+    fontSize: 36,
+    marginBottom: 15,
   },
-  titleText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.white,
-    marginBottom: 6,
-  },
-  cardPressable: {
-    padding: 20,
+
+  footerText: {
+    fontSize: 16,
+    color: COLORS.textLight,
+    textAlign: 'center',
+    lineHeight: 22,
+    fontStyle: 'italic',
   },
 });

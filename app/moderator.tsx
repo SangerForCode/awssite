@@ -1,376 +1,328 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  ScrollView,
+  Text,
   TouchableOpacity,
+  FlatList,
+  TextInput,
+  Modal,
   Alert,
-  RefreshControl,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import axios from 'axios';
-import Animated, {
-  FadeInUp,
-  FadeInDown,
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated';
-import { ThemedText } from '@/components/ThemedText';
-import { globalStyles, COLORS } from '@/styles/globalStyles';
-import { useRouter } from 'expo-router';
 
 type Blog = {
   id: string;
   title: string;
-  excerpt: string;
   content: string;
   authorName: string;
-  publishDate: string;
-  createdAt?: string;
-  readTime?: string;
-  category?: string;
 };
 
 const FIREBASE_URL = 'https://aws-site-personal-default-rtdb.firebaseio.com/blogs';
 
-export default function ModeratorPage() {
+export default function BlogManager() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const router = useRouter();
+  const [editBlog, setEditBlog] = useState<Blog | null>(null);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [author, setAuthor] = useState('');
 
-  // Fetch all blogs
+  // Fetch blogs from Firebase
   const fetchBlogs = async () => {
     try {
       const response = await axios.get(`${FIREBASE_URL}.json`);
-      
-      if (response.data && Object.keys(response.data).length > 0) {
-        const blogsList: Blog[] = Object.keys(response.data).map(id => ({
+      if (response.data) {
+        const blogsList = Object.keys(response.data).map(id => ({
           id,
           ...response.data[id],
         }));
-        
-        // Sort by newest first
-        blogsList.sort(
-          (a, b) =>
-            new Date(b.createdAt || b.publishDate).getTime() -
-            new Date(a.createdAt || a.publishDate).getTime()
-        );
         setBlogs(blogsList);
-      } else {
-        setBlogs([]);
       }
     } catch (error) {
-      console.error('Error fetching blogs:', error);
-      Alert.alert('Error', 'Failed to fetch blogs');
-      setBlogs([]);
+      console.error('Fetch error:', error);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
-  // Delete specific blog
-  const deleteBlog = async (blogId: string, blogTitle: string) => {
+  // Delete blog
+  const deleteBlog = async (id: string, title: string) => {
     Alert.alert(
-      'Confirm Delete',
-      `Are you sure you want to delete "${blogTitle}"?\n\nThis action cannot be undone.`,
+      'Delete Blog',
+      `Delete "${title}"?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => performDelete(blogId),
+          onPress: async () => {
+            try {
+              await axios.delete(`${FIREBASE_URL}/${id}.json`);
+              setBlogs(prev => prev.filter(blog => blog.id !== id));
+              Alert.alert('Success', 'Blog deleted');
+            } catch (error) {
+              Alert.alert('Error', 'Delete failed');
+            }
+          },
         },
       ]
     );
   };
 
-  const performDelete = async (blogId: string) => {
-    setDeleting(blogId);
+  // Open edit modal
+  const openEdit = (blog: Blog) => {
+    setEditBlog(blog);
+    setTitle(blog.title);
+    setContent(blog.content);
+    setAuthor(blog.authorName);
+  };
+
+  // Save changes
+  const saveChanges = async () => {
+    if (!editBlog) return;
+
     try {
-      // Delete request to Firebase
-      await axios.delete(`${FIREBASE_URL}/${blogId}.json`);
+      const updatedBlog = {
+        ...editBlog,
+        title,
+        content,
+        authorName: author,
+      };
+
+      await axios.put(`${FIREBASE_URL}/${editBlog.id}.json`, updatedBlog);
       
-      // Remove from local state
-      setBlogs(prev => prev.filter(blog => blog.id !== blogId));
+      setBlogs(prev => prev.map(blog => 
+        blog.id === editBlog.id ? updatedBlog : blog
+      ));
       
-      Alert.alert('Success', 'Blog deleted successfully!');
+      closeEdit();
+      Alert.alert('Success', 'Blog updated');
     } catch (error) {
-      console.error('Error deleting blog:', error);
-      Alert.alert('Error', 'Failed to delete blog. Please try again.');
-    } finally {
-      setDeleting(null);
+      Alert.alert('Error', 'Update failed');
     }
   };
 
-  // Delete ALL blogs
-  const deleteAllBlogs = async () => {
-    Alert.alert(
-      '⚠️ DELETE ALL BLOGS',
-      'This will permanently delete ALL blogs from the database!\n\nThis action CANNOT be undone!',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'DELETE ALL',
-          style: 'destructive',
-          onPress: () => performDeleteAll(),
-        },
-      ]
-    );
-  };
-
-  const performDeleteAll = async () => {
-    setLoading(true);
-    try {
-      // Delete entire blogs collection
-      await axios.delete(`${FIREBASE_URL}.json`);
-      
-      setBlogs([]);
-      Alert.alert('Success', 'All blogs have been deleted!');
-    } catch (error) {
-      console.error('Error deleting all blogs:', error);
-      Alert.alert('Error', 'Failed to delete all blogs');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchBlogs();
+  // Close edit modal
+  const closeEdit = () => {
+    setEditBlog(null);
+    setTitle('');
+    setContent('');
+    setAuthor('');
   };
 
   useEffect(() => {
     fetchBlogs();
   }, []);
 
+  const renderBlog = ({ item }: { item: Blog }) => (
+    <View style={styles.blogCard}>
+      <Text style={styles.blogTitle}>{item.title}</Text>
+      <Text style={styles.blogAuthor}>By: {item.authorName}</Text>
+      <Text style={styles.blogContent} numberOfLines={2}>
+        {item.content}
+      </Text>
+      
+      <View style={styles.actions}>
+        <TouchableOpacity 
+          style={[styles.button, styles.editButton]} 
+          onPress={() => openEdit(item)}
+        >
+          <Text style={styles.buttonText}>Edit</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.button, styles.deleteButton]} 
+          onPress={() => deleteBlog(item.id, item.title)}
+        >
+          <Text style={styles.buttonText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" />
+        <Text>Loading blogs...</Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        style={globalStyles.container}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.accent} />
-        }
+    <View style={styles.container}>
+      <Text style={styles.header}>Blog Manager</Text>
+      
+      <FlatList
+        data={blogs}
+        renderItem={renderBlog}
+        keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <Animated.View entering={FadeInUp.springify()} style={globalStyles.header}>
-          <ThemedText style={globalStyles.headerTitle}>Moderator Panel</ThemedText>
-          <ThemedText style={globalStyles.headerSubtitle}>
-            Manage and moderate all blog posts
-          </ThemedText>
-        </Animated.View>
+      />
 
-        {/* Stats */}
-        <Animated.View entering={FadeInDown.delay(200).springify()} style={globalStyles.statsContainer}>
-          <View style={globalStyles.statItem}>
-            <ThemedText style={globalStyles.statValue}>{blogs.length}</ThemedText>
-            <ThemedText style={globalStyles.statLabel}>Total Blogs</ThemedText>
+      {/* Edit Modal */}
+      <Modal visible={!!editBlog} animationType="slide">
+        <View style={styles.modal}>
+          <Text style={styles.modalTitle}>Edit Blog</Text>
+          
+          <Text style={styles.label}>Title</Text>
+          <TextInput
+            style={styles.input}
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Blog title"
+          />
+          
+          <Text style={styles.label}>Author</Text>
+          <TextInput
+            style={styles.input}
+            value={author}
+            onChangeText={setAuthor}
+            placeholder="Author name"
+          />
+          
+          <Text style={styles.label}>Content</Text>
+          <TextInput
+            style={[styles.input, styles.contentInput]}
+            value={content}
+            onChangeText={setContent}
+            placeholder="Blog content"
+            multiline
+          />
+          
+          <View style={styles.modalActions}>
+            <TouchableOpacity style={styles.cancelButton} onPress={closeEdit}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.saveButton} onPress={saveChanges}>
+              <Text style={styles.buttonText}>Save</Text>
+            </TouchableOpacity>
           </View>
-          <View style={globalStyles.statItem}>
-            <ThemedText style={globalStyles.statValue}>
-              {blogs.filter(blog => blog.createdAt).length}
-            </ThemedText>
-            <ThemedText style={globalStyles.statLabel}>User Posts</ThemedText>
-          </View>
-          <View style={globalStyles.statItem}>
-            <ThemedText style={globalStyles.statValue}>
-              {deleting ? '🗑️' : '✅'}
-            </ThemedText>
-            <ThemedText style={globalStyles.statLabel}>Status</ThemedText>
-          </View>
-        </Animated.View>
-
-        {/* Danger Zone */}
-        <Animated.View entering={FadeInUp.delay(400).springify()} style={styles.dangerZone}>
-          <ThemedText style={styles.dangerTitle}>⚠️ Danger Zone</ThemedText>
-          <TouchableOpacity onPress={deleteAllBlogs} style={styles.deleteAllButton}>
-            <ThemedText style={styles.deleteAllText}>🗑️ Delete All Blogs</ThemedText>
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Blog List */}
-        <View style={globalStyles.section}>
-          <Animated.View entering={FadeInUp.delay(600).springify()}>
-            <ThemedText style={globalStyles.sectionTitle}>All Blogs</ThemedText>
-          </Animated.View>
-
-          {loading ? (
-            <ThemedText style={[globalStyles.cardText, { textAlign: 'center' }]}>
-              Loading blogs...
-            </ThemedText>
-          ) : blogs.length > 0 ? (
-            blogs.map((blog, index) => (
-              <BlogModeratorCard
-                key={blog.id}
-                blog={blog}
-                onDelete={() => deleteBlog(blog.id, blog.title)}
-                isDeleting={deleting === blog.id}
-                delay={800 + index * 100}
-              />
-            ))
-          ) : (
-            <Animated.View entering={FadeInUp.delay(800).springify()} style={globalStyles.card}>
-              <ThemedText style={[globalStyles.cardTitle, { textAlign: 'center' }]}>
-                No blogs found
-              </ThemedText>
-              <ThemedText style={[globalStyles.cardText, { textAlign: 'center' }]}>
-                All blogs have been deleted or none exist yet.
-              </ThemedText>
-            </Animated.View>
-          )}
         </View>
-
-        {/* Back Button */}
-        <Animated.View entering={FadeInUp.delay(1000).springify()} style={globalStyles.section}>
-          <TouchableOpacity onPress={() => router.back()} style={globalStyles.button}>
-            <ThemedText style={globalStyles.buttonText}>← Back to App</ThemedText>
-          </TouchableOpacity>
-        </Animated.View>
-      </ScrollView>
+      </Modal>
     </View>
   );
 }
 
-// Blog Card for Moderator
-interface BlogModeratorCardProps {
-  blog: Blog;
-  onDelete: () => void;
-  isDeleting: boolean;
-  delay: number;
-}
-
-const BlogModeratorCard: React.FC<BlogModeratorCardProps> = ({
-  blog,
-  onDelete,
-  isDeleting,
-  delay,
-}) => {
-  const [expanded, setExpanded] = useState(false);
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePress = () => {
-    scale.value = withSpring(0.98, {}, () => (scale.value = withSpring(1)));
-    setExpanded(!expanded);
-  };
-
-  return (
-    <Animated.View entering={FadeInUp.delay(delay).springify()} style={animatedStyle}>
-      <View style={globalStyles.animatedCard}>
-        <View style={globalStyles.cardContent}>
-          {/* Header with Delete Button */}
-          <View style={styles.cardHeader}>
-            <View style={{ flex: 1 }}>
-              <ThemedText style={globalStyles.cardTitle}>{blog.title}</ThemedText>
-              <ThemedText style={[globalStyles.badgeText, { color: COLORS.accent }]}>
-                By: {blog.authorName} • {blog.publishDate}
-              </ThemedText>
-            </View>
-            <TouchableOpacity
-              onPress={onDelete}
-              disabled={isDeleting}
-              style={[styles.deleteButton, isDeleting && styles.deletingButton]}
-            >
-              <ThemedText style={styles.deleteButtonText}>
-                {isDeleting ? '⏳' : '🗑️'}
-              </ThemedText>
-            </TouchableOpacity>
-          </View>
-
-          {/* Content Preview */}
-          <TouchableOpacity onPress={handlePress}>
-            <ThemedText style={globalStyles.cardDescription}>
-              {expanded ? blog.content : blog.excerpt}
-            </ThemedText>
-            <ThemedText style={[globalStyles.badgeText, { color: COLORS.text, marginTop: 8 }]}>
-              {expanded ? 'Tap to collapse' : 'Tap to expand'} • ID: {blog.id.substring(0, 8)}...
-            </ThemedText>
-          </TouchableOpacity>
-
-          {/* Blog Info */}
-          <View style={styles.blogInfo}>
-            <View style={[globalStyles.badge, { backgroundColor: COLORS.gray }]}>
-              <ThemedText style={[globalStyles.badgeText, { color: COLORS.textLight }]}>
-                {blog.category || 'General'}
-              </ThemedText>
-            </View>
-            <View style={[globalStyles.badge, { backgroundColor: COLORS.gray }]}>
-              <ThemedText style={[globalStyles.badgeText, { color: COLORS.textLight }]}>
-                {blog.readTime || '1 min'}
-              </ThemedText>
-            </View>
-            {blog.createdAt && (
-              <View style={[globalStyles.badge, { backgroundColor: COLORS.green }]}>
-                <ThemedText style={[globalStyles.badgeText, { color: COLORS.white }]}>
-                  User Post
-                </ThemedText>
-              </View>
-            )}
-          </View>
-        </View>
-      </View>
-    </Animated.View>
-  );
-};
-
 const styles = StyleSheet.create({
-  dangerZone: {
-    marginHorizontal: 24,
-    marginBottom: 24,
-    backgroundColor: '#FF000015',
-    borderRadius: 12,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#FF000030',
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    padding: 16,
   },
-  dangerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FF4444',
-    marginBottom: 12,
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
     textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
   },
-  deleteAllButton: {
-    backgroundColor: '#FF4444',
-    padding: 12,
-    borderRadius: 8,
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  deleteAllText: {
-    color: COLORS.white,
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  blogCard: {
+    backgroundColor: 'white',
+    padding: 16,
     marginBottom: 12,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  blogTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  blogAuthor: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  blogContent: {
+    fontSize: 14,
+    color: '#444',
+    marginBottom: 12,
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  button: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  editButton: {
+    backgroundColor: '#4CAF50',
   },
   deleteButton: {
-    backgroundColor: '#FF444420',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 12,
+    backgroundColor: '#f44336',
   },
-  deletingButton: {
-    backgroundColor: COLORS.gray,
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: '500',
   },
-  deleteButtonText: {
-    fontSize: 18,
+  modal: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: 'white',
   },
-  blogInfo: {
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8,
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 4,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  contentInput: {
+    height: 120,
+    textAlignVertical: 'top',
+  },
+  modalActions: {
     flexDirection: 'row',
-    marginTop: 12,
-    gap: 8,
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  cancelButton: {
+    backgroundColor: '#757575',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 4,
+    flex: 1,
+    marginRight: 8,
+  },
+  saveButton: {
+    backgroundColor: '#2196F3',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 4,
+    flex: 1,
+    marginLeft: 8,
   },
 });
