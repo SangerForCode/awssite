@@ -13,9 +13,9 @@ import Animated, {
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Import logos from local assets
-const FitSocLogo = require('C:/APP/testinng/aws/awssite/assets/Photos/fitsoc.jpg');
-const SportsBoardLogo = require('C:/APP/testinng/aws/awssite/assets/Photos/sportsboard.jpg');
-const StudentStoreLogo = require('C:/APP/testinng/aws/awssite/assets/Photos/studentstore.jpg');
+const FitSocLogo = require('../../assets/Photos/fitsoc.jpg');
+const SportsBoardLogo = require('../../assets/Photos/sportsboard.jpg');
+const StudentStoreLogo = require('../../assets/Photos/studentstore.jpg');
 
 // Timeline Card Component
 interface TimelineCardProps {
