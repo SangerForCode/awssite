@@ -7,7 +7,6 @@ import {
   Alert,
   ScrollView,
   Dimensions,
-  Image,
 } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -82,36 +81,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <ThemedText style={[styles.projectMetric, { color }]}>{metric}</ThemedText>
         </View>
       </TouchableOpacity>
-    </Animated.View>
-  );
-};
-
-// Photo Gallery Component
-const PhotoGallery = () => {
-  const photos = [
-    require('../../assets/Photos/1.jpg'),
-    require('../../assets/Photos/2.jpg'),
-    require('../../assets/Photos/3.jpg'),
-  ];
-
-  return (
-    <Animated.View entering={FadeInUp.delay(500).springify()} style={styles.photoGallery}>
-      {/* <ThemedText style={styles.photoTitle}>Meet Ayush</ThemedText> */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.photoScrollContainer}
-      >
-        {/* {photos.map((photo, index) => (
-          <Animated.View 
-            key={index}
-            entering={FadeInUp.delay(600 + index * 100).springify()}
-            style={styles.photoWrapper}
-          >
-            <Image source={photo} style={styles.profilePhoto} resizeMode="cover" />
-          </Animated.View>
-        ))} */}
-      </ScrollView>
     </Animated.View>
   );
 };
@@ -256,7 +225,6 @@ export default function IndexScreen() {
       icon: '👑',
       color: COLORS.green,
     },
-    
   ];
 
   const socialLinks = [
@@ -290,14 +258,11 @@ export default function IndexScreen() {
         </View>
       </Animated.View>
 
-      {/* Photo Gallery */}
-      <PhotoGallery />
-
       {/* Enhanced Stats */}
       <Stats />
 
       {/* About Section with Better Design */}
-      <Animated.View entering={FadeInUp.delay(700).springify()} style={styles.aboutCard}>
+      <Animated.View entering={FadeInUp.delay(600).springify()} style={styles.aboutCard}>
         <View style={styles.aboutHeader}>
           <ThemedText style={styles.aboutTitle}>Dual Degree Scholar</ThemedText>
           <ThemedText style={styles.aboutEmoji}>🎓</ThemedText>
@@ -317,13 +282,13 @@ export default function IndexScreen() {
           <ProjectCard
             key={index}
             {...project}
-            delay={900 + index * 100}
+            delay={800 + index * 100}
           />
         ))}
       </View>
 
       {/* Enhanced Tech Stack */}
-      <Animated.View entering={FadeInUp.delay(1300).springify()} style={styles.techStackCard}>
+      <Animated.View entering={FadeInUp.delay(1200).springify()} style={styles.techStackCard}>
         <View style={styles.techHeader}>
           <ThemedText onPress={handleModeratorNavigation} style={styles.techTitle}>💻 Tech Arsenal</ThemedText>
         </View>
@@ -356,32 +321,31 @@ export default function IndexScreen() {
       </Animated.View>
 
       {/* Enhanced Social Section */}
-      <Animated.View entering={FadeInUp.delay(1500).springify()} style={styles.socialSection}>
+      <Animated.View entering={FadeInUp.delay(1400).springify()} style={styles.socialSection}>
         <ThemedText style={styles.socialTitle}>🤝 Let's Connect</ThemedText>
         <View style={styles.socialButtons}>
           {socialLinks.map((link, index) => (
             <SocialButton
               key={index}
               {...link}
-              delay={1700 + index * 100}
+              delay={1600 + index * 100}
             />
           ))}
         </View>
       </Animated.View>
 
       {/* Enhanced Footer */}
-      <Animated.View entering={FadeInUp.delay(1900).springify()} style={styles.footer}>
-  <TouchableOpacity style={styles.footerButton} onPress={() => {
-    const instaUrl = 'https://www.instagram.com/sanger_ayush';
-    Linking.openURL(instaUrl).catch(() => {
-      Alert.alert('Error', 'Could not open Instagram profile.');
-    });
-  }}>
-    <ThemedText style={styles.footerEmail}>📸 @sanger_ayush</ThemedText>
-    <ThemedText style={styles.footerSubtext}>Tap to connect on Instagram</ThemedText>
-  </TouchableOpacity>
-</Animated.View>
-
+      <Animated.View entering={FadeInUp.delay(1800).springify()} style={styles.footer}>
+        <TouchableOpacity style={styles.footerButton} onPress={() => {
+          const instaUrl = 'https://www.instagram.com/sanger_ayush';
+          Linking.openURL(instaUrl).catch(() => {
+            Alert.alert('Error', 'Could not open Instagram profile.');
+          });
+        }}>
+          <ThemedText style={styles.footerEmail}>📸 @sanger_ayush</ThemedText>
+          <ThemedText style={styles.footerSubtext}>Tap to connect on Instagram</ThemedText>
+        </TouchableOpacity>
+      </Animated.View>
 
       <View style={{ height: 80 }} />
     </ScrollView>
@@ -453,38 +417,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textLight,
     opacity: 0.8,
-  },
-
-  // Photo Gallery Styles
-  photoGallery: {
-    paddingVertical: 20,
-    marginBottom: 20,
-  },
-
-  photoTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.white,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-
-  photoScrollContainer: {
-    paddingHorizontal: 32,
-    gap: 16,
-  },
-
-  photoWrapper: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: COLORS.accent,
-  },
-
-  profilePhoto: {
-    width: 120,
-    height: 120,
-    borderRadius: 14,
   },
 
   // Enhanced Stats
