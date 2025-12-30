@@ -1,50 +1,102 @@
-# Welcome to your Expo app 👋
+# Personal Portfolio & Blog Platform
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Project Aim
+This project is a mobile application designed as a personal portfolio and blogging platform. It provides a structured way to showcase personal work and publish articles, with separate functionalities for content creation and moderation.
 
-## Get started
+## Technical Implementation
+Built with React Native and the Expo framework, this application uses a modern, file-based routing system powered by Expo Router. The architecture includes tab-based navigation for a clear user experience. Core functionality relies on React for UI management, and it is structured to potentially connect to a backend for dynamic content, as suggested by the inclusion of `axios` for API requests. The project is written in TypeScript, ensuring type safety and improved code quality.
 
-1. Install dependencies
+## Key Features
+- **Content Management:** Includes screens for adding and viewing blog posts, forming a simple CMS.
+- **Structured Navigation:** Features a tabbed layout for easy access to Home, Blogs, Portfolio, and other key sections.
+- **Role-Based Views:** Implies different user roles with the inclusion of a dedicated `moderator` screen.
 
-   ```bash
-   npm install
-   ```
+## Setup Instructions
 
-2. Start the app
+- **Install dependencies:** `npm install`
 
-   ```bash
-   npx expo start
-   ```
+- **Run the app:** `npx expo start`
 
-In the output, you'll find options to open the app in a
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## System Diagram
 
-## Get a fresh project
+```mermaid
 
-When you're ready, run:
+graph TD
 
-```bash
-npm run reset-project
+    subgraph "User"
+
+        A[Mobile User]
+
+    end
+
+
+
+    subgraph "React Native App (Expo)"
+
+        B(Expo Router)
+
+        C(Tab Navigator)
+
+        
+
+        subgraph "Screens"
+
+            D[Home]
+
+            E[Blogs]
+
+            F[Portfolio]
+
+            G[Contact]
+
+            H[Add Blog]
+
+            I[Moderator]
+
+            J[About]
+
+        end
+
+    end
+
+
+
+    subgraph "Backend (Potential)"
+
+        K[(API Server)]
+
+    end
+
+
+
+    A --> B
+
+    B --> C
+
+    C --> D
+
+    C --> E
+
+    C --> F
+
+    C --> G
+
+    
+
+    B --> H
+
+    B --> I
+
+    B --> J
+
+    
+
+    E --> K
+
+    H --> K
+
+    I --> K
+
 ```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
