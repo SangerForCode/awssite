@@ -21,82 +21,162 @@ Built with React Native and the Expo framework, this application uses a modern, 
 
 ## System Diagram
 
+
+
 ```mermaid
 
-graph TD
+
+
+flowchart TD
+
+
 
     subgraph "User"
 
+
+
         A[Mobile User]
 
+
+
     end
+
+
+
+
 
 
 
     subgraph "React Native App (Expo)"
 
+
+
         B(Expo Router)
+
+
 
         C(Tab Navigator)
 
+
+
         
+
+
 
         subgraph "Screens"
 
+
+
             D[Home]
+
+
 
             E[Blogs]
 
+
+
             F[Portfolio]
+
+
 
             G[Contact]
 
+
+
             H[Add Blog]
+
+
 
             I[Moderator]
 
+
+
             J[About]
+
+
 
         end
 
+
+
     end
+
+
+
+
 
 
 
     subgraph "Backend (Potential)"
 
+
+
         K[(API Server)]
+
+
 
     end
 
 
 
+
+
+
+
     A --> B
+
+
 
     B --> C
 
+
+
     C --> D
+
+
 
     C --> E
 
+
+
     C --> F
+
+
 
     C --> G
 
+
+
     
+
+
 
     B --> H
 
+
+
     B --> I
+
+
 
     B --> J
 
+
+
     
+
+
 
     E --> K
 
+
+
     H --> K
 
+
+
     I --> K
+
+
 
 ```
